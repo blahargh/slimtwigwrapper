@@ -10,11 +10,14 @@
 			"name": "A.M. Santos",
 			"email": "a74159@gmail.com",
 			"homepage":  "https://github.com/blahargh"
-		},
+		}
 	],
 	"require": {
 		"php": ">=5.6",
     		"slim/slim": "~3.8",
 		"twig/twig": "~1.33"
+	},
+	"autoload": {
+		"psr-4": {"IMP\\": "src/"}
 	}
 }
