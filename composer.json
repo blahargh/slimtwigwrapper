@@ -1,3 +1,8 @@
 {
-	"name": "blahargh/slimtwigwrapper"
+	"name": "blahargh/slimtwigwrapper",
+	"description": "Wrapper object for Slim and Twig.",
+	"keywords": ["imp", "slim", "twig", "wrapper", "simplified", "simple"],
+	"homepage": "https://github.com/blahargh/slimtwigwrapper",
+	"type": "library",
+	"license": "Apache-2.0"
 }
