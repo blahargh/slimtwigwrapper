@@ -8,12 +8,13 @@ use \Psr\Http\Message\ResponseInterface as Response;
 class SlimTwigWrapper
 {
 	private $app;
-	
+
 	public $request;   // Changes per route.
 	public $response;  // Changes per route.
 	public $basePath;  // Changes per route.
-	
+
 	public $server;
+	public $subroot;
 	public $host;
 	public $domainURI;
 	public $requestURI;
@@ -23,26 +24,26 @@ class SlimTwigWrapper
 	public $relativePath;
 	public $requestMethod;
 	public $realURIDirectory;
-	
-	
+
+
 	public function __construct()
 	{
 		$this->server = $this->encode($_SERVER);
+		$this->subroot = dirname($this->server['SCRIPT_NAME']);
 		$parts = explode('?', $this->server['REQUEST_URI']);
 		$this->host = $this->server['HTTP_HOST'];
 		$this->domainURI = 'http' . (!empty($this->server['HTTPS']) && $this->server['HTTPS'] === 'on' ? 's' : '') . '://' . $this->server['HTTP_HOST'];
 		$this->requestURI = '/' . trim($parts[0], '/*'); //<-- Request URI should be relative to the domain. Remove trailing "*" so user can't access a wildcard route directly.
 		$this->queryString = isset($this->server['QUERY_STRING']) ? $this->server['QUERY_STRING'] : '';
 		$this->selfURI = $this->server['REQUEST_URI'];
-		$this->absolutePath = dirname($this->server["SCRIPT_FILENAME"]); #dirname(dirname(__FILE__));
-		$this->relativePath = str_replace($this->server['DOCUMENT_ROOT'], '', $this->absolutePath);
 		$this->requestMethod = strtolower($this->server['REQUEST_METHOD']);
+		$this->absolutePath = realpath($this->server['DOCUMENT_ROOT'] . $this->subroot);
+		$this->relativePath = str_replace('\\', '/', $this->subroot);
 		$this->realURIDirectory = $this->getRealDirectory(); //<-- "" or "/some/path"
-		//$this->basePath =& $this->realURIDirectory;
-		
+
 		$container = new \Slim\Container();
 		$this->app = new \Slim\App($container);
-		
+
 		// Make sure the "views" directory exists before loading Twig.
 		if (!is_dir('views')) {
 			mkdir('views');
@@ -54,20 +55,21 @@ class SlimTwigWrapper
 			));
 			return $twig;
 		});
-		
+
 		$this->addGlobal('host', $this->host);
 		$this->addGlobal('domainURI', $this->domainURI);
 		$this->addGlobal('requestURI', $this->requestURI);
 		$this->addGlobal('selfURI', $this->selfURI);
 		$this->addGlobal('relativePath', $this->relativePath);
 		$this->addGlobal('realURIDirectory', $this->realURIDirectory);
-		
+		$this->addGlobal('basePath', $this->subroot);
+
 		// Add routes if defined in a "routes.php" file in the base directory.
 		if (file_exists("{$this->server['DOCUMENT_ROOT']}$this->relativePath/routes.php")) {
 			$app = $this;
 			include "{$this->server['DOCUMENT_ROOT']}$this->relativePath/routes.php";
 		}
-		
+
 		// Add routes if defined in a "routes.php" file in a real directory that is a part of the URL.
 		$routesFile = 'routes.php';
 		if ($this->realURIDirectory && file_exists("{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile")) {
@@ -75,7 +77,7 @@ class SlimTwigWrapper
 			include "{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile";
 		}
 	}
-	
+
 	/**
 	 * Get the existing directory out of a path. This is useful if you want to have index.php include files that are in
 	 * a matching base directory.
@@ -83,7 +85,7 @@ class SlimTwigWrapper
 	private function getRealDirectory($string = null)
 	{
 		if ($string === null) { $string = $this->requestURI; }
-		
+
 		$string = str_replace('\\', '/', trim($string));
 		$tokens = explode('/', trim($string, '/'));
 		$dir = null;
@@ -98,7 +100,7 @@ class SlimTwigWrapper
 		}
 		return $dir;
 	}
-	
+
 	/**
 	 * This is used to encode a string so that it is safe for print out.
 	 * This can be overwritten if a different encoding process is desired.
@@ -115,7 +117,7 @@ class SlimTwigWrapper
 			return htmlentities($strOrArray, ENT_QUOTES | ENT_SUBSTITUTE);
 		}
 	}
-	
+
 	/**
 	 * Add a dependency injection into the container.
 	 */
@@ -124,7 +126,7 @@ class SlimTwigWrapper
 		$c = $this->app->getContainer();
 		$c[$name] = $callback->bindTo($this->app, $this->app);
 	}
-	
+
 	/**
 	 * Add a global twig variable.
 	 */
@@ -133,7 +135,7 @@ class SlimTwigWrapper
 		$twig = $this->app->getContainer()->get('twig');
 		$twig->addGlobal($name, $value);
 	}
-	
+
 	/**
 	 * Run the slim process.
 	 */
@@ -141,13 +143,13 @@ class SlimTwigWrapper
 	{
 		$this->app->run();
 	}
-	
+
 	/**
 	 * Define a route.
 	 */
 	public function route($methods, $path, $callback)
 	{
-		$path = str_replace('~', $this->realURIDirectory, $path);
+		$path = str_replace('~', str_replace($this->subroot, '', $this->realURIDirectory), $path);
 		$methods = explode(',', $methods);
 		foreach ($methods as $i => $m) {
 			$m = trim($m);
@@ -159,42 +161,50 @@ class SlimTwigWrapper
 		$responseCall = function ($request, $response, $args) use ($wrapper, $routeCallback) {
 			$wrapper->request = $request;
 			$wrapper->response = $response;
-			$wrapper->basePath = $request->getUri()->getBasePath();
-			$wrapper->addGlobal('basePath', $wrapper->basePath);
 			$routeCallback($args);
 			return $response;
 		};
 		$this->app->map($methods, $path, $responseCall);
 	}
-	
+
 	/**
 	 * Render a twig template or an HTML string.
 	 */
 	public function render($toRender, $params = array())
 	{
 		if (strpos($toRender, ' ') === false && substr($toRender, -5) === '.html') {
-			$basePath = dirname($this->server["SCRIPT_FILENAME"]);
 			$twig = $this->app->getContainer()->get('twig');
-			$toRender = str_replace('~', $this->realURIDirectory, $toRender);
-			// First, check if the template is in the real URI directory. If it is, then render that one.
-			#if (file_exists("$basePath/{$this->realURIDirectory}/$toRender")) {
-			#	$this->response->write($twig->render("$this->realURIDirectory/$toRender", $params));
-			#	return;
-			#} else {
-				// If the template is not in the real URI directory, then check the defined template paths.
-				$this->response->write($twig->render($toRender, $params));
-				return;
-			#}
+			$toRender = str_replace('~', str_replace($this->subroot, '', $this->realURIDirectory), $toRender);
+			$this->response->write($twig->render($toRender, $params));
 		} else {
 			$this->response->write($toRender);
 		}
 	}
-	
+
 	/**
 	 * Specify a redirection.
 	 */
 	public function redirectTo($uri)
 	{
 		$this->response->withRedirect($this->basePath . '/instructions');
+	}
+
+	/**
+	 * Get environment variables.
+	 */
+	public function getVars()
+	{
+		return array(
+			'subroot' => $this->subroot,
+			'host' => $this->host,
+			'domainURI' => $this->domainURI,
+			'requestURI' => $this->requestURI,
+			'queryString' => $this->queryString,
+			'selfURI' => $this->selfURI,
+			'requestMethod' => $this->requestMethod,
+			'absolutePath' => $this->absolutePath,
+			'relativePath' => $this->relativePath,
+			'realURIDirectory' => $this->realURIDirectory,
+		) + $this->server;
 	}
 }
