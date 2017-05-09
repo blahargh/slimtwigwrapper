@@ -1,5 +1,5 @@
 {
-	"name": "imp/slimtwigwrapper",
+	"name": "blahargh/slimtwigwrapper",
 	"description": "Wrapper object for Slim and Twig.",
 	"keywords": ["imp", "slim", "twig", "wrapper", "simplified", "simple"],
 	"homepage": "https://github.com/blahargh/slimtwigwrapper",
@@ -10,7 +10,7 @@
 			"name": "A.M. Santos",
 			"email": "a74159@gmail.com",
 			"homepage":  "https://github.com/blahargh"
-		},
+		}
 	],
 	"require": {
 		"php": ">=5.6",
