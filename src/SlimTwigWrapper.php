@@ -43,6 +43,10 @@ class SlimTwigWrapper
 		$container = new \Slim\Container();
 		$this->app = new \Slim\App($container);
 		
+		// Make sure the "views" directory exists before loading Twig.
+		if (!is_dir('views')) {
+			mkdir('views');
+		}
 		$this->addDependency('twig', function($container) {
 			$loader = new \Twig_Loader_Filesystem(array('views', ''));
 			$twig = new \Twig_Environment($loader, array(
