@@ -150,6 +150,7 @@ class SlimTwigWrapper
 	public function route($methods, $path, $callback)
 	{
 		$path = str_replace('~', str_replace($this->subroot, '', $this->realURIDirectory), $path);
+		if (substr($path, 0, 1) !== '/') { $path = '/' . $path; }
 		$methods = explode(',', $methods);
 		foreach ($methods as $i => $m) {
 			$m = trim($m);
@@ -175,6 +176,7 @@ class SlimTwigWrapper
 		if (strpos($toRender, ' ') === false && substr($toRender, -5) === '.html') {
 			$twig = $this->app->getContainer()->get('twig');
 			$toRender = str_replace('~', str_replace($this->subroot, '', $this->realURIDirectory), $toRender);
+			if (substr($toRender, 0, 1) !== '/') { $toRender = '/' . $toRender; }
 			$this->response->write($twig->render($toRender, $params));
 		} else {
 			$this->response->write($toRender);
