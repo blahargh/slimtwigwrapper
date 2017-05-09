@@ -1,0 +1,20 @@
+{
+	"name": "imp/slimtwigwrapper",
+	"description": "Wrapper object for Slim and Twig.",
+	"keywords": ["imp", "slim", "twig", "wrapper", "simplified", "simple"],
+	"homepage": "https://github.com/blahargh/slimtwigwrapper",
+	"type": "library",
+	"license": "Apache-2.0",
+	"authors": [
+		{
+			"name": "A.M. Santos",
+			"email": "a74159@gmail.com",
+			"homepage":  "https://github.com/blahargh"
+		},
+	],
+	"require": {
+		"php": ">=5.6",
+    "slim/slim": "~3.8",
+		"twig/twig": "~1.33"
+	},
+}
