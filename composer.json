@@ -19,7 +19,7 @@
 	},
 	"autoload": {
 		"psr-4": {"IMP\\": "src/"}
-	}
+	},
 	"extra": {
 		"branch-alias": {
 			"dev-master": "1.0-dev"
