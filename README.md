@@ -1,2 +1,89 @@
 # Slim-Twig Wrapper
 Simple wrapper object for using Slim with Twig.
+
+## Usage
+
+### In `index.php`:
+``` php
+<?php
+require 'vendor/autoload.php';
+
+$app = new \IMP\SlimTwigWrapper();
+
+$app->route('get', '/', function() {
+  $this->render('home.html', [
+    'myVar' => 'abc123',
+    'anotherVar' => 999,
+  ]);
+});
+
+// Any route allowed in Slim should work.
+$app->route('get', '/abc[/{userid}]', function($args) {
+  $userID = isset($args['userid']) ? $args['userid'] : null;
+  $this->render('info.html', [
+    'userID' => $userID,
+  ]);
+});
+
+$app->run();
+```
+
+### Accessing the Request and Response objects:
+``` php
+$app->route('post', '/aaa', function() {
+  $formInput = $this->request->getParsedBody(); // Get POST data.
+  // $this->response <-- Response object.
+  $this->render('aaa/edit.html', [
+    'userID' => $formInput['user-id'],
+  ]);
+});
+```
+
+### Dependency Injection:
+``` php
+$app->addDependency('flashMessenger', function() {
+  return new \App\CustomFlashMessenger();
+});
+
+$app->route('get', '/aaa', function() {
+  $this->app->flashMessenger->add('notice', 'Blah blah some text.');
+  $this->render('aaa/home.html');
+});
+```
+
+### Add global Twig variables.
+``` php
+$app->addGlobal('varname', 'value123');
+```
+
+In the Twig template file:
+``` html
+<h1>My Awesome Page!</h1>
+<p>
+  The variable value is {{ varname }}.
+</p>
+```
+
+### Subroot example:
+Root route file: `/var/www/html/index.php`  
+Subroot route file: `/var/www/html/accounts/routes.php`
+
+All routes in a subroot route file will be treated as if having been prefixed with that directory name. That route file will also only be loaded if the user goes to that directory through the URL. The root route file is not loaded if the user goes to a subroot directory.
+
+``` php
+<?php
+// In /var/www/html/accounts/routes.php:
+
+// URL: http://mydomain.com/accounts
+$app->route('get', '', function() {
+  $this->render('views/accounts/home.html');
+});
+
+// URL: http://mydomain.com/accounts/edit
+$app->route('get, post', 'edit', function () {
+  $accounts = \Models\SomeObject::getAccounts();
+  $this->render('view/accounts/edit.html', [
+    'accounts' => $accounts,
+  ]);
+});
+```
