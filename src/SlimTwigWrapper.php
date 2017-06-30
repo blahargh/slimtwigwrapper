@@ -8,6 +8,7 @@ use \Psr\Http\Message\ResponseInterface as Response;
 class SlimTwigWrapper
 {
 	private $app;
+	private $noMoreRoutes = false; // Flag to determine if subsequent routes should even be loaded.
 
 	public $request;   // Changes per route.
 	public $response;  // Changes per route.
@@ -75,6 +76,8 @@ class SlimTwigWrapper
 		if ($this->realURIDirectory && file_exists("{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile")) {
 			$app = $this;
 			include "{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile";
+			// Set flag to not load further routes so root routes does not conflict with subroot routes that were just loaded.
+			$this->noMoreRoutes = true;
 		}
 	}
 
@@ -149,8 +152,21 @@ class SlimTwigWrapper
 	 */
 	public function route($methods, $path, $callback)
 	{
-		$path = str_replace('~', str_replace($this->subroot, '', $this->realURIDirectory), $path);
-		if (substr($path, 0, 1) !== '/') { $path = '/' . $path; }
+		if ($this->noMoreRoutes) { return false; }
+		if ($path && substr($path, 0, 1) !== '/') { $path = '/' . $path; }
+		
+		$subrootPath = str_replace($this->subroot, '', $this->realURIDirectory);
+		if (!empty($subrootPath)) {
+			if (substr($path, 0, 2) === '/~') {
+				$path = str_replace('~', $subrootPath, $path);
+			} else {
+				$path = $this->realURIDirectory . $path;
+			}
+		}
+		
+		#print 'PPPP:'.$path."\n";
+		#print 'FFF:'.__FILE__."\n\n";
+		
 		$methods = explode(',', $methods);
 		foreach ($methods as $i => $m) {
 			$m = trim($m);
