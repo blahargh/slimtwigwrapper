@@ -3,7 +3,7 @@ Simple wrapper object for using Slim with Twig.
 
 ## Usage
 
-### In index.php:
+### In _index.php_:
 ``` php
 <?php
 require 'vendor/autoload.php';
