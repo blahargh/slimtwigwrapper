@@ -22,6 +22,9 @@ $app->route('get', '/', function() {
     'myVar' => 'abc123',
     'anotherVar' => 999,
   ]);
+  
+  // Injecting HTML.
+  $this->response->write('Forcing HTML in the response.');
 });
 
 // Any route allowed in Slim should work.
@@ -35,14 +38,15 @@ $app->route('get', '/abc[/{userid}]', function($args) {
 $app->run();
 ```
 
-### Accessing the Request and Response objects:
+### Accessing the Request, Response, and Twig objects, if needed:
 ``` php
 $app->route('post', '/aaa', function() {
   $formInput = $this->request->getParsedBody(); // Get POST data.
-  // $this->response <-- Response object.
-  $this->render('aaa/edit.html', [
-    'userID' => $formInput['user-id'],
-  ]);
+  $this->response->write(
+    $this->twig->render('aaa/edit.html', [
+      'userID' => $formInput['user-id'],
+    ])
+  );
 });
 ```
 
@@ -95,7 +99,7 @@ $app->route('get', '', function() {
 // URL: http://mydomain.com/accounts/edit
 $app->route('get, post', 'edit', function () {
   $accounts = \Models\SomeObject::getAccounts();
-  $this->render('view/accounts/edit.html', [
+  $this->render('edit.html', [
     'accounts' => $accounts,
   ]);
 });
