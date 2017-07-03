@@ -10,6 +10,7 @@ class SlimTwigWrapper
 	private $app;
 	private $noMoreRoutes = false; // Flag to determine if subsequent routes should even be loaded.
 
+	public $twig;
 	public $request;   // Changes per route.
 	public $response;  // Changes per route.
 	public $basePath;  // Changes per route.
@@ -56,6 +57,9 @@ class SlimTwigWrapper
 			));
 			return $twig;
 		});
+		
+		// Store the twig object as a property for easy referencing, if need be.
+		$this->twig = $this->app->getContainer()->get('twig');
 
 		$this->addGlobal('host', $this->host);
 		$this->addGlobal('domainURI', $this->domainURI);
@@ -135,8 +139,7 @@ class SlimTwigWrapper
 	 */
 	public function addGlobal($name, $value)
 	{
-		$twig = $this->app->getContainer()->get('twig');
-		$twig->addGlobal($name, $value);
+		$this->twig->addGlobal($name, $value);
 	}
 
 	/**
@@ -190,15 +193,35 @@ class SlimTwigWrapper
 	public function render($toRender, $params = array())
 	{
 		if (strpos($toRender, ' ') === false && substr($toRender, -5) === '.html') {
-			$twig = $this->app->getContainer()->get('twig');
 			$firstChar = substr($toRender, 0, 1);
 			if ($firstChar !== '/') {
 				$toRender = str_replace($this->subroot, '', $this->realURIDirectory) . '/' . ltrim($toRender, '~');
 			}
 			if (substr($toRender, 0, 1) !== '/') { $toRender = '/' . $toRender; }
-			$this->response->write($twig->render($toRender, $params));
+			$this->response->write($this->twig->render($toRender, $params));
 		} else {
-			$this->response->write($toRender);
+			/** Force using templates for security? **/
+			/** $this->response->write($toRender); **/
+			throw new \Exception('Use a view file template (.html) for rendering HTML.');
+		}
+	}
+
+	/**
+	 * Get the rendered HTML from a twig template or an HTML string.
+	 */
+	public function getRender($toRender, $params = array())
+	{
+		if (strpos($toRender, ' ') === false && substr($toRender, -5) === '.html') {
+			$firstChar = substr($toRender, 0, 1);
+			if ($firstChar !== '/') {
+				$toRender = str_replace($this->subroot, '', $this->realURIDirectory) . '/' . ltrim($toRender, '~');
+			}
+			if (substr($toRender, 0, 1) !== '/') { $toRender = '/' . $toRender; }
+			return $this->twig->render($toRender, $params);
+		} else {
+			/** Force using templates for security? **/
+			/** return $toRender; **/
+			throw new \Exception('Use a view file template (.html) for rendering HTML.');
 		}
 	}
 
@@ -209,6 +232,15 @@ class SlimTwigWrapper
 	{
 		$this->response->withRedirect($this->basePath . '/instructions');
 	}
+	
+	/**
+	 * Get an input parameter first from PUT, then POST, then GET, and if not found, NULL is returned.
+	 */
+	 public function getParam($name)
+	 {
+	 	if (empty($this->request)) { return null; }
+		return $this->request->params($name);
+	 }
 
 	/**
 	 * Get environment variables.
