@@ -15,6 +15,13 @@ $app->route('get', '/', function() {
     'myVar' => 'abc123',
     'anotherVar' => 999,
   ]);
+  
+  // This does the same thing as above. Since this is through the root
+  // app, the prefix '/' does not make a difference.
+  $this->render('/home.html', [
+    'myVar' => 'abc123',
+    'anotherVar' => 999,
+  ]);
 });
 
 // Any route allowed in Slim should work.
@@ -76,7 +83,13 @@ All routes in a subroot route file will be treated as if having been prefixed wi
 
 // URL: http://mydomain.com/accounts
 $app->route('get', '', function() {
-  $this->render('views/accounts/home.html');
+  $this->render('home.html'); //<-- Looks for '/var/www/html/accounts/home.html'.
+  - OR IF -
+  $this->render('/home.html'); //<-- Looks for '/var/www/html/home.html' or '/var/www/html/views/home.html'.
+  - OR IF -
+  $this->render('/accounts/home.html'); //<-- Looks for '/var/www/html/accounts/home.html' or '/var/www/html/views/accounts/home.html'.
+  - OR IF -
+  $this->render('accounts/home.html'); //<-- Looks for '/var/www/html/accounts/accounts/home.html', which is probably not what you want!
 });
 
 // URL: http://mydomain.com/accounts/edit
