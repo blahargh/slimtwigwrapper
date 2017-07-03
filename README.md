@@ -13,7 +13,7 @@ $app = new \IMP\SlimTwigWrapper();
 $app->run();
 ```
 
-### Route in _routes.php_:
+### Routes in _routes.php_:
 Root routes file: `/var/www/html/routes.php`  
 ``` php
 <?php
