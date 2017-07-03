@@ -191,7 +191,10 @@ class SlimTwigWrapper
 	{
 		if (strpos($toRender, ' ') === false && substr($toRender, -5) === '.html') {
 			$twig = $this->app->getContainer()->get('twig');
-			$toRender = str_replace('~', str_replace($this->subroot, '', $this->realURIDirectory), $toRender);
+			$firstChar = substr($toRender, 0, 1);
+			if ($firstChar !== '/') {
+				$toRender = str_replace($this->subroot, '', $this->realURIDirectory) . '/' . ltrim($toRender, '~');
+			}
 			if (substr($toRender, 0, 1) !== '/') { $toRender = '/' . $toRender; }
 			$this->response->write($twig->render($toRender, $params));
 		} else {
