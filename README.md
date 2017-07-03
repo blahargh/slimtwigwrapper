@@ -83,13 +83,13 @@ All routes in a subroot route file will be treated as if having been prefixed wi
 
 // URL: http://mydomain.com/accounts
 $app->route('get', '', function() {
-  $this->render('home.html'); //<-- Looks for '/var/www/html/accounts/home.html'.
+  $this->render('home.html'); //<-- Looks for '/var/www/html/accounts/home.html'. (Subroot view call)
   - OR IF -
-  $this->render('/home.html'); //<-- Looks for '/var/www/html/home.html' or '/var/www/html/views/home.html'.
+  $this->render('/home.html'); //<-- Looks for '/var/www/html/home.html' or '/var/www/html/views/home.html'. (Root view call)
   - OR IF -
-  $this->render('/accounts/home.html'); //<-- Looks for '/var/www/html/accounts/home.html' or '/var/www/html/views/accounts/home.html'.
+  $this->render('/accounts/home.html'); //<-- Looks for '/var/www/html/accounts/home.html' or '/var/www/html/views/accounts/home.html'. (Root view call)
   - OR IF -
-  $this->render('accounts/home.html'); //<-- Looks for '/var/www/html/accounts/accounts/home.html', which is probably not what you want!
+  $this->render('accounts/home.html'); //<-- Looks for '/var/www/html/accounts/accounts/home.html', which is probably not what you want! (Subroot view call)
 });
 
 // URL: http://mydomain.com/accounts/edit
