@@ -4,11 +4,19 @@ Simple wrapper object for using Slim with Twig.
 ## Usage
 
 ### In _index.php_:
+Index file: `/var/www/html/index.php`
 ``` php
 <?php
 require 'vendor/autoload.php';
 
 $app = new \IMP\SlimTwigWrapper();
+$app->run();
+```
+
+### Route in _routes.php_:
+Root routes file: `/var/www/html/routes.php`  
+``` php
+<?php
 
 $app->route('get', '/', function() {
   $this->render('home.html', [
@@ -76,8 +84,8 @@ In the Twig template file:
 ```
 
 ### Subroot example:
-Root route file: `/var/www/html/index.php`  
-Subroot route file: `/var/www/html/accounts/routes.php`
+Root routes file: `/var/www/html/routes.php` or in `/var/www/html/index.php`  
+Subroot routes file: `/var/www/html/accounts/routes.php`
 
 All routes in a subroot route file will be treated as if having been prefixed with that directory name. That route file will also only be loaded if the user goes to that directory through the URL. The root route file is not loaded if the user goes to a subroot directory.
 
