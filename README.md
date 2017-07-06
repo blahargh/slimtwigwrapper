@@ -112,3 +112,128 @@ $app->route('get, post', 'edit', function () {
   ]);
 });
 ```
+
+### Sample file organization and how the routes will look:
+
+#### Organized By Type
+
+``` php
+File structure:
+---------------
+* css
+  * layout.css
+* js
+  * layout.js
+* models
+  * CustomFlashMessenger.php
+* routes
+  * archive.php            <A
+  * tools-emulation.php
+  * tools-user-info.php    <B
+* vendor
+  * blahargh
+  * slim
+  * twig
+  * autoload.php
+* views                    <
+  * archive                <A
+    * list.html            <A
+    * view.html            <A
+  * tools                  <
+    * emulation            <
+      * search.html        <
+    * user-info            <B
+      * search.html        <B
+      * view.html          <B
+  * home.html              <
+* composer.json
+* index.php
+
+Routes:
+-------
+// In index.php
+
+// Load in all of our other routes available to the application.
+// A more performant solution would be to not use glob(), but
+// for small apps this is neglible
+$routeFiles = (array)glob('routes/*.php');
+foreach ($routeFiles as $route) {
+    require $route;
+}
+
+$app->route('get', '/', function() {
+  $this->render('home.html');
+});
+
+
+// In routes/archive.php                                             <A
+$app->route('get', '/archive', function() {                          <A
+  $this->render('archive/list.html');                                <A
+});                                                                  <A
+
+// In routes/tools-user-info.php                                     <B
+$app->route('get', '/tools/user-info', function() {                  <B
+  $this->render('tools/user-info/search.html');                      <B
+});                                                                  <B
+$app->route('get', '/tools/user-info/edit/{id}', function($args) {   <B
+  $this->render('tools/user-info/view.html', ['id'=>$args['id']]);   <B
+});                                                                  <B
+```
+
+#### Organized by Modules (Subroots)
+
+``` php
+File structure:
+---------------
+* archive                        <A
+  * views                        <A
+      * list.html                <A
+      * view.html                <A
+  * routes.php                   <A
+* css
+  * layout.css
+* js
+  * layout.js
+* models
+  * CustomFlashMessenger.php
+* tools                          <
+  * user-info                    <B
+    * views                      <B
+      * search.html              <B
+      * view.html                <B
+    * routes.php                 <B
+  * emulation
+    * views
+      * search.html
+    * routes.php
+* vendor
+  * blahargh
+  * slim
+  * twig
+  * autoload.php
+* views
+  * home.html
+* composer.json
+* index.php
+* routes.php
+
+Routes:
+-------
+// In routes.php
+$app->route('get', '/', function() {
+  $this->render('home.html');
+});
+
+// In archive/routes.php                                        <A
+$app->route('get', '', function() {                             <A
+  $this->render('views/list.html');                             <A
+});                                                             <A
+
+// In tools/user-info/routes.php                                <B
+$app->route('get', '', function() {                             <B
+  $this->render('views/search.html');                           <B
+});                                                             <B
+$app->route('get', 'edit/{id}', function($args) {               <B
+  $this->render('views/view.html', ['id'=>$args['id']]);        <B
+});                                                             <B
+```
