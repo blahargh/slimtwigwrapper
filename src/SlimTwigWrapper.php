@@ -69,12 +69,6 @@ class SlimTwigWrapper
 		$this->addGlobal('realURIDirectory', $this->realURIDirectory);
 		$this->addGlobal('basePath', $this->subroot);
 
-		// Add routes if defined in a "routes.php" file in the base directory.
-		if (file_exists("{$this->server['DOCUMENT_ROOT']}$this->relativePath/routes.php")) {
-			$app = $this;
-			include "{$this->server['DOCUMENT_ROOT']}$this->relativePath/routes.php";
-		}
-
 		// Add routes if defined in a "routes.php" file in a real directory that is a part of the URL.
 		$routesFile = 'routes.php';
 		if ($this->realURIDirectory && file_exists("{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile")) {
@@ -82,6 +76,12 @@ class SlimTwigWrapper
 			include "{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile";
 			// Set flag to not load further routes so root routes does not conflict with subroot routes that were just loaded.
 			$this->noMoreRoutes = true;
+		}
+		
+		// Add routes if defined in a "routes.php" file in the base directory.
+		if (file_exists("{$this->server['DOCUMENT_ROOT']}$this->relativePath/routes.php")) {
+			$app = $this;
+			include "{$this->server['DOCUMENT_ROOT']}$this->relativePath/routes.php";
 		}
 	}
 
@@ -195,7 +195,9 @@ class SlimTwigWrapper
 		if (strpos($toRender, ' ') === false && substr($toRender, -5) === '.html') {
 			$firstChar = substr($toRender, 0, 1);
 			if ($firstChar !== '/') {
-				$toRender = str_replace($this->subroot, '', $this->realURIDirectory) . '/' . ltrim($toRender, '~');
+				$pos = strpos($this->realURIDirectory, $this->subroot);
+				$toRender = ltrim($toRender, '~');
+				if ($pos === 0) { $toRender = substr($this->realURIDirectory, strlen($this->subroot)) . '/' . $toRender; }
 			}
 			if (substr($toRender, 0, 1) !== '/') { $toRender = '/' . $toRender; }
 			$this->response->write($this->twig->render($toRender, $params));
@@ -214,7 +216,9 @@ class SlimTwigWrapper
 		if (strpos($toRender, ' ') === false && substr($toRender, -5) === '.html') {
 			$firstChar = substr($toRender, 0, 1);
 			if ($firstChar !== '/') {
-				$toRender = str_replace($this->subroot, '', $this->realURIDirectory) . '/' . ltrim($toRender, '~');
+				$pos = strpos($this->realURIDirectory, $this->subroot);
+				$toRender = ltrim($toRender, '~');
+				if ($pos === 0) { $toRender = substr($this->realURIDirectory, strlen($this->subroot)) . '/' . $toRender; }
 			}
 			if (substr($toRender, 0, 1) !== '/') { $toRender = '/' . $toRender; }
 			return $this->twig->render($toRender, $params);
