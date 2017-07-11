@@ -16,32 +16,32 @@ class SlimTwigWrapper
 	public $basePath;  // Changes per route.
 
 	public $server;
-	public $subroot;
+	public $root;
 	public $host;
 	public $domainURI;
 	public $requestURI;
+	public $realURIDirectory;
 	public $queryString;
 	public $selfURI;
 	public $absolutePath;
 	public $relativePath;
 	public $requestMethod;
-	public $realURIDirectory;
 
 
 	public function __construct()
 	{
 		$this->server = $this->encode($_SERVER);
-		$this->subroot = dirname($this->server['SCRIPT_NAME']);
+		$this->root = dirname($this->server['SCRIPT_NAME']);
 		$parts = explode('?', $this->server['REQUEST_URI']);
 		$this->host = $this->server['HTTP_HOST'];
 		$this->domainURI = 'http' . (!empty($this->server['HTTPS']) && $this->server['HTTPS'] === 'on' ? 's' : '') . '://' . $this->server['HTTP_HOST'];
 		$this->requestURI = '/' . trim($parts[0], '/*'); //<-- Request URI should be relative to the domain. Remove trailing "*" so user can't access a wildcard route directly.
+		$this->realURIDirectory = $this->getRealDirectory(); //<-- "/" or "/some/path"
 		$this->queryString = isset($this->server['QUERY_STRING']) ? $this->server['QUERY_STRING'] : '';
 		$this->selfURI = $this->server['REQUEST_URI'];
 		$this->requestMethod = strtolower($this->server['REQUEST_METHOD']);
-		$this->absolutePath = realpath($this->server['DOCUMENT_ROOT'] . $this->subroot);
-		$this->relativePath = str_replace('\\', '/', $this->subroot);
-		$this->realURIDirectory = $this->getRealDirectory(); //<-- "" or "/some/path"
+		$this->absolutePath = realpath($this->server['DOCUMENT_ROOT'] . $this->root);
+		$this->relativePath = str_replace('\\', '/', $this->root);
 
 		$container = new \Slim\Container();
 		$this->app = new \Slim\App($container);
@@ -60,6 +60,15 @@ class SlimTwigWrapper
 		
 		// Store the twig object as a property for easy referencing, if need be.
 		$this->twig = $this->app->getContainer()->get('twig');
+		
+		// Prepend template subpath.
+		if ($this->realURIDirectory !== '' && $this->realURIDirectory !== '/') {
+			$path = ltrim($this->realURIDirectory, '/');
+			$this->twig->getLoader()->prependPath($path);
+			if (file_exists($path . '/views')) {
+				$this->twig->getLoader()->prependPath($path . '/views');
+			}
+		}
 
 		$this->addGlobal('host', $this->host);
 		$this->addGlobal('domainURI', $this->domainURI);
@@ -67,7 +76,7 @@ class SlimTwigWrapper
 		$this->addGlobal('selfURI', $this->selfURI);
 		$this->addGlobal('relativePath', $this->relativePath);
 		$this->addGlobal('realURIDirectory', $this->realURIDirectory);
-		$this->addGlobal('basePath', $this->subroot);
+		$this->addGlobal('basePath', $this->root);
 
 		// Add routes if defined in a "routes.php" file in a real directory that is a part of the URL.
 		$routesFile = 'routes.php';
@@ -158,13 +167,8 @@ class SlimTwigWrapper
 		if ($this->noMoreRoutes) { return false; }
 		if ($path && substr($path, 0, 1) !== '/') { $path = '/' . $path; }
 		
-		$subrootPath = str_replace($this->subroot, '', $this->realURIDirectory);
-		if (!empty($subrootPath)) {
-			if (substr($path, 0, 2) === '/~') {
-				$path = str_replace('~', $subrootPath, $path);
-			} else {
-				$path = $this->realURIDirectory . $path;
-			}
+		if ($this->realURIDirectory !== '/') {
+			$path = $this->realURIDirectory . $path;
 		}
 		
 		#print 'PPPP:'.$path."\n";
@@ -192,20 +196,7 @@ class SlimTwigWrapper
 	 */
 	public function render($toRender, $params = array())
 	{
-		if (strpos($toRender, ' ') === false && substr($toRender, -5) === '.html') {
-			$firstChar = substr($toRender, 0, 1);
-			if ($firstChar !== '/') {
-				$pos = strpos($this->realURIDirectory, $this->subroot);
-				$toRender = ltrim($toRender, '~');
-				if ($pos === 0) { $toRender = substr($this->realURIDirectory, strlen($this->subroot)) . '/' . $toRender; }
-			}
-			if (substr($toRender, 0, 1) !== '/') { $toRender = '/' . $toRender; }
-			$this->response->write($this->twig->render($toRender, $params));
-		} else {
-			/** Force using templates for security? **/
-			/** $this->response->write($toRender); **/
-			throw new \Exception('Use a view file template (.html) for rendering HTML.');
-		}
+		$this->response->write($this->getRender($toRender, $params));
 	}
 
 	/**
@@ -214,13 +205,6 @@ class SlimTwigWrapper
 	public function getRender($toRender, $params = array())
 	{
 		if (strpos($toRender, ' ') === false && substr($toRender, -5) === '.html') {
-			$firstChar = substr($toRender, 0, 1);
-			if ($firstChar !== '/') {
-				$pos = strpos($this->realURIDirectory, $this->subroot);
-				$toRender = ltrim($toRender, '~');
-				if ($pos === 0) { $toRender = substr($this->realURIDirectory, strlen($this->subroot)) . '/' . $toRender; }
-			}
-			if (substr($toRender, 0, 1) !== '/') { $toRender = '/' . $toRender; }
 			return $this->twig->render($toRender, $params);
 		} else {
 			/** Force using templates for security? **/
@@ -252,7 +236,7 @@ class SlimTwigWrapper
 	public function getVars()
 	{
 		return array(
-			'subroot' => $this->subroot,
+			'root' => $this->root,
 			'host' => $this->host,
 			'domainURI' => $this->domainURI,
 			'requestURI' => $this->requestURI,
