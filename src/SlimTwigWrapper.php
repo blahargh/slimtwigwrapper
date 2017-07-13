@@ -259,7 +259,7 @@ class SlimTwigWrapper
 	public function getParam($name)
 	{
 		if (empty($this->request)) { return null; }
-		return $this->request->params($name);
+		return $this->request->getParam($name);
 	}
 	 
 	 /**
