@@ -32,7 +32,7 @@ $app->route('get', '/', function() {
   ]);
   
   // Injecting HTML.
-  $this->response->write('Forcing HTML in the response.');
+  $this->write('Forcing HTML in the response.');
 });
 
 // Any route allowed in Slim should work.
@@ -104,7 +104,7 @@ $app->addMiddleware(function($callNext) {
 });
 
 $app->addMiddleware(function($callNext) {
-  $this->write('This middleware only does things before the content. The call to "next" is done automatically if not envoked in this closure.');
+  $this->write('This middleware only do stuff before the content. The call to "next" is done automatically if not envoked in this closure.');
   
   // Direct access to parameters passed in middleware callbacks by Slim:
   // $this->request
@@ -121,7 +121,13 @@ $app->addMiddleware(function($callNext) {
 Root routes file: `/var/www/html/routes.php` or in `/var/www/html/index.php`  
 Subroot routes file: `/var/www/html/accounts/routes.php`
 
-All routes in a subroot route file will be treated as if having been prefixed with that directory name. That route file will also only be loaded if the user goes to that directory through the URL. The root route file is not loaded if the user goes to a subroot directory.
+Subroots are **actual** decendant directories of the root directory, not just a URL path. In this case, `/var/www/html` is the root directory and `accounts` is a subroot.  
+
+All routes in a subroot `routes.php` file will be treated as if having been prefixed with that directory path. That route file will also only be loaded if the user goes to that directory through the URL. The root route file is not loaded if the user goes to a subroot directory. Basically, subroots can contain their own routes and view files within themselves, and the whole site can be compartmentalized by subroots. Models may also be secluded, but since they typically need to be available throughout the site, it's most likely best to have them relative to the root directory, such as `/var/www/html/models`.  
+
+The subroot directory and the `views` directory within it are passed to the Twig Loader as valid locations for template files. It will first search in the subroot's `views` directory, then the subroot's main directory, then the root's `views` directory, then finally the main root directory.  
+
+If a view file in root, or another subroot, needs to be accessed, prepend a '/' to the path. It will then be treated as relative to the root directory.
 
 ``` php
 <?php
@@ -129,6 +135,8 @@ All routes in a subroot route file will be treated as if having been prefixed wi
 
 // URL: http://mydomain.com/accounts
 $app->route('get', '', function() {
+  // In subroots, template path prefixed with a '/' assumes that it is relative to the root directory.
+  // Without the '/', it is treated as relative to the subroot directory.
   $this->render('home.html'); //<-- (Subroot view call) Looks for '/var/www/html/accounts/home.html'.
   - OR IF -
   $this->render('/home.html'); //<-- (Root view call) Looks for '/var/www/html/home.html' or '/var/www/html/views/home.html'.
@@ -187,7 +195,7 @@ Routes:
 -------
 // In index.php
 
-// Load in all of our other routes available to the application.
+// Load in all of our other routes available to the application in the "routes" directory.
 // A more performant solution would be to not use glob(), but
 // for small apps this is neglible
 $routeFiles = (array)glob('routes/*.php');
