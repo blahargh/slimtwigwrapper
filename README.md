@@ -58,9 +58,21 @@ $app->route('post', '/aaa', function() {
 });
 ```
 
+### Shortcut to writing to the Response object:
+``` php
+$app->route('get', '/blah', function() {
+  $this->write('Some text goes here!');
+  // Since there is a valid Response object at this point, the string is written to it.
+  // If there was no valid Response object, the string would be written to the output buffer (PHP's print() function).
+  // This is just a shortcut for $this->response->write('Some text goes here!').
+});
+```
+
 ### Dependency Injection:
 ``` php
-$app->addDependency('flashMessenger', function() {
+$app->addDependency('flashMessenger', function($container) {
+  $myOtherDependency = $container->get('a_different_dependency');
+  // Do something with $myOtherDependency ... blah blah
   return new \App\CustomFlashMessenger();
 });
 
@@ -70,7 +82,7 @@ $app->route('get', '/aaa', function() {
 });
 ```
 
-### Add global Twig variables.
+### Add global Twig variables:
 ``` php
 $app->addGlobal('varname', 'value123');
 ```
@@ -81,6 +93,28 @@ In the Twig template file:
 <p>
   The variable value is {{ varname }}.
 </p>
+```
+
+### Add middleware:
+``` php
+$app->addMiddleware(function($callNext) {
+  $this->write('Middleware: Before content!');
+  $callNext(); //<-- Move on to the next middleware or main content.
+  $this->write('Middleware: After content!');
+});
+
+$app->addMiddleware(function($callNext) {
+  $this->write('This middleware only does things before the content. The call to "next" is done automatically if not envoked in this closure.');
+  
+  // Direct access to parameters passed in middleware callbacks by Slim:
+  // $this->request
+  // $this->response
+  // $this->next
+  // Example:
+  //    $this->response->write('Header');
+  //    $this->response = $this->next($this->request, $this->response); //<-- Move on to the next middleware or main content.
+  //    $this->response->write('Footer');
+});
 ```
 
 ### Subroot example:
