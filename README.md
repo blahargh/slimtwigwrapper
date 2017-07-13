@@ -46,6 +46,15 @@ $app->route('get', '/abc[/{userid}]', function($args) {
 $app->run();
 ```
 
+### Get input parameters:
+``` php
+$app->route('get, post', '/blah', function() {
+  $blah1 = $this->getParam('input_blah1');
+  $blah2 = $this->getParam('input_blah2');
+  // getParam() is just a shortcut to $this->request->getParam().
+});
+```
+
 ### Accessing the Request, Response, and Twig objects, if needed:
 ``` php
 $app->route('post', '/aaa', function() {
