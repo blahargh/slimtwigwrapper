@@ -11,9 +11,11 @@ class SlimTwigWrapper
 	private $noMoreRoutes = false; // Flag to determine if subsequent routes should even be loaded.
 
 	public $twig;
-	public $request;   // Changes per route.
-	public $response;  // Changes per route.
-	public $basePath;  // Changes per route.
+	public $request;       // Changes per route/middleware.
+	public $response;      // Changes per route/middleware.
+	public $basePath;      // Changes per route.
+	public $next;          // Changes per middleware.
+	public $wasNextCalled; // Changes per middleware.
 
 	public $server;
 	public $root;
@@ -141,6 +143,8 @@ class SlimTwigWrapper
 	{
 		$c = $this->app->getContainer();
 		$c[$name] = $callback->bindTo($this->app, $this->app);
+		
+		return $this;
 	}
 
 	/**
@@ -149,6 +153,35 @@ class SlimTwigWrapper
 	public function addGlobal($name, $value)
 	{
 		$this->twig->addGlobal($name, $value);
+		
+		return $this;
+	}
+	
+	/**
+	 * Add a middleware.
+	 */
+	public function addMiddleware($callback)
+	{
+		$wrapper = $this;
+		$middlewareCallback = $callback->bindTo($wrapper);
+		$middlewareCall = function ($request, $response, $next) use ($wrapper, $middlewareCallback) {
+			$wrapper->request = $request;
+			$wrapper->response = $response;
+			$wrapper->next = $next;
+			$wrapper->wasNextCalled = false;
+			$callNext = function () use ($wrapper) {
+				$wrapper->response = call_user_func($wrapper->next, $wrapper->request, $wrapper->response);
+				$wrapper->wasNextCalled = true;
+			};
+			$middlewareCallback($callNext);
+			if (!$wrapper->wasNextCalled) {
+				$callNext();
+			}
+			return $wrapper->response;
+		};
+		$this->app->add($middlewareCall);
+		
+		return $this;
 	}
 
 	/**
@@ -171,9 +204,6 @@ class SlimTwigWrapper
 			$path = $this->realURIDirectory . $path;
 		}
 		
-		#print 'PPPP:'.$path."\n";
-		#print 'FFF:'.__FILE__."\n\n";
-		
 		$methods = explode(',', $methods);
 		foreach ($methods as $i => $m) {
 			$m = trim($m);
@@ -189,6 +219,8 @@ class SlimTwigWrapper
 			return $response;
 		};
 		$this->app->map($methods, $path, $responseCall);
+		
+		return $this;
 	}
 
 	/**
@@ -224,11 +256,24 @@ class SlimTwigWrapper
 	/**
 	 * Get an input parameter first from PUT, then POST, then GET, and if not found, NULL is returned.
 	 */
-	 public function getParam($name)
-	 {
-	 	if (empty($this->request)) { return null; }
+	public function getParam($name)
+	{
+		if (empty($this->request)) { return null; }
 		return $this->request->params($name);
+	}
+	 
+	 /**
+	  * Shortcut to write out to the Response object if it exists, to the output buffer otherwise.
+	  */
+	 public function write($str)
+	 {
+	 	if (!empty($this->response) && method_exists($this->response, 'write')) {
+			$this->response->write($str);
+		} else {
+			print $str;
+		}
 	 }
+	  
 
 	/**
 	 * Get environment variables.
