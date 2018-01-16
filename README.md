@@ -147,13 +147,13 @@ If a view file in root, or another subroot, needs to be accessed, prepend a '/' 
 $app->route('get', '', function() {
   // In subroots, template path prefixed with a '/' assumes that it is relative to the root directory.
   // Without the '/', it is treated as relative to the subroot directory.
-  $this->render('home.html'); //<-- (Subroot view call) Looks for '/var/www/html/accounts/home.html'.
+  $this->render('home.html'); //<-- (Subroot view call) Looks for '/var/www/html/accounts/views/home.html', then '/var/www/html/accounts/home.html', then 'var/www/html/views/home.html', then finally 'var/www/html/home.html'.
   - OR IF -
-  $this->render('/home.html'); //<-- (Root view call) Looks for '/var/www/html/home.html' or '/var/www/html/views/home.html'.
+  $this->render('/home.html'); //<-- (Root view call) Looks for '/var/www/html/views/home.html', then '/var/www/html/home.html'.
   - OR IF -
-  $this->render('/accounts/home.html'); //<-- (Root view call) Looks for '/var/www/html/accounts/home.html' or '/var/www/html/views/accounts/home.html'.
+  $this->render('/accounts/home.html'); //<-- (Root view call) Looks for '/var/www/html/views/accounts/home.html', then '/var/www/html/accounts/home.html'.
   - OR IF -
-  $this->render('accounts/home.html'); //<-- (Subroot view call) Looks for '/var/www/html/accounts/accounts/home.html', which is probably not what you want!
+  $this->render('accounts/home.html'); //<-- (Subroot view call) Looks for '/var/www/html/accounts/views/accounts/home.html', then '/var/www/html/accounts/accounts/home.html' (which is probably not what you want!), then '/var/www/html/views/accounts/home.html', then finally '/var/www/html/accounts/home.html'.
 });
 
 // URL: http://mydomain.com/accounts/edit
