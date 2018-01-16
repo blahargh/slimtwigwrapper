@@ -46,7 +46,7 @@ class SlimTwigWrapper
 		$this->relativePath = str_replace('\\', '/', $this->root);
 
 		$container = new \Slim\Container();
-		$this->app = new \Slim\App($container);
+		$this->slim = new \Slim\App($container);
 
 		// Make sure the "views" directory exists before loading Twig.
 		if (!is_dir('views')) {
@@ -61,7 +61,7 @@ class SlimTwigWrapper
 		});
 		
 		// Store the twig object as a property for easy referencing, if need be.
-		$this->twig = $this->app->getContainer()->get('twig');
+		$this->twig = $this->slim->getContainer()->get('twig');
 		
 		// Prepend template subpath.
 		if ($this->realURIDirectory !== '' && $this->realURIDirectory !== '/') {
@@ -141,8 +141,8 @@ class SlimTwigWrapper
 	 */
 	public function addDependency($name, $callback)
 	{
-		$c = $this->app->getContainer();
-		$c[$name] = $callback->bindTo($this->app, $this->app);
+		$c = $this->slim->getContainer();
+		$c[$name] = $callback->bindTo($this->slim, $this->slim);
 		
 		return $this;
 	}
@@ -179,7 +179,7 @@ class SlimTwigWrapper
 			}
 			return $wrapper->response;
 		};
-		$this->app->add($middlewareCall);
+		$this->slim->add($middlewareCall);
 		
 		return $this;
 	}
@@ -189,7 +189,7 @@ class SlimTwigWrapper
 	 */
 	public function run()
 	{
-		$this->app->run();
+		$this->slim->run();
 	}
 
 	/**
@@ -218,7 +218,7 @@ class SlimTwigWrapper
 			$routeCallback($args);
 			return $response;
 		};
-		$this->app->map($methods, $path, $responseCall);
+		$this->slim->map($methods, $path, $responseCall);
 		
 		return $this;
 	}
