@@ -55,10 +55,11 @@ $app->route('get, post', '/blah', function() {
 });
 ```
 
-### Accessing the Request, Response, and Twig objects, if needed:
+### Accessing the Request, Response, Twig, and Slim objects, if needed:
 ``` php
 $app->route('post', '/aaa', function() {
   $formInput = $this->request->getParsedBody(); // Get POST data.
+  $slimDependencyContainer = $this->slim->getContainer();
   $this->response->write(
     $this->twig->render('aaa/edit.html', [
       'userID' => $formInput['user-id'],
@@ -86,7 +87,7 @@ $app->addDependency('flashMessenger', function($container) {
 });
 
 $app->route('get', '/aaa', function() {
-  $this->app->flashMessenger->add('notice', 'Blah blah some text.');
+  $this->slim->flashMessenger->add('notice', 'Blah blah some text.');
   $this->render('aaa/home.html');
 });
 ```
