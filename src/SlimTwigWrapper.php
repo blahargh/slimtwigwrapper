@@ -10,6 +10,7 @@ class SlimTwigWrapper
 	private $app;
 	private $noMoreRoutes = false;       // Flag to determine if subsequent routes should even be loaded.
     private $groupMiddlewares = array(); // Storage for defined group middlewares.
+    private $lastDefinedRoute = null;    // Store the last defined route, so subsequent calls to addRouteMiddleware know to which route to attach the middleware.
 
 	public $twig;
 	public $request;       // Changes per route/middleware.
@@ -194,11 +195,21 @@ class SlimTwigWrapper
 	}
 
     /**
-     * Define a middleware to user for a group.
+     * Define a middleware to use for a group.
      */
     public function addGroupMiddleware($path, $callback)
     {
         $this->groupMiddlewares[$path] = $this->makeMiddlewareCallback($callback);
+        return $this;
+    }
+
+    /**
+     * Define a middleware to use for the last defined route.
+     */
+    public function addRouteMiddleware($callback)
+    {
+        if (!$this->lastDefinedRoute) { return this; }
+        $this->lastDefinedRoute->add($this->makeMiddlewareCallback($callback));
         return $this;
     }
 
@@ -237,14 +248,17 @@ class SlimTwigWrapper
 			return $response;
 		};
 
-        // Return Slim's route object so other Slim methods can be chained easily, such as route middlewares.
 		$route = $this->slim->map($methods, $path, $responseCall);
+        // Check for any matching group middleware.
         foreach ($this->groupMiddlewares as $path => $middlwareCallback) {
             if (substr($path, 0, strlen($path)) === $path) {
                 $route->add($middlewareCallback);
             }
         }
-        return $route;
+        // Store this route so subsequent calls to addRouteMiddleware know to attach it to this route.
+        $this->lastDefinedRoute = $route;
+
+        return $this;
 	}
 
 	/**
