@@ -8,7 +8,9 @@ use \Psr\Http\Message\ResponseInterface as Response;
 class SlimTwigWrapper
 {
 	private $app;
-	private $noMoreRoutes = false; // Flag to determine if subsequent routes should even be loaded.
+	private $noMoreRoutes = false;       // Flag to determine if subsequent routes should even be loaded.
+    private $groupMiddlewares = array(); // Storage for defined group middlewares.
+    private $lastDefinedRoute = null;    // Store the last defined route, so subsequent calls to addRouteMiddleware know to which route to attach the middleware.
 
 	public $twig;
 	public $request;       // Changes per route/middleware.
@@ -59,10 +61,10 @@ class SlimTwigWrapper
 			));
 			return $twig;
 		});
-		
+
 		// Store the twig object as a property for easy referencing, if need be.
 		$this->twig = $this->slim->getContainer()->get('twig');
-		
+
 		// Prepend template subpath.
 		if ($this->realURIDirectory !== '' && $this->realURIDirectory !== '/') {
 			$path = ltrim($this->realURIDirectory, '/');
@@ -88,7 +90,7 @@ class SlimTwigWrapper
 			// Set flag to not load further routes so root routes does not conflict with subroot routes that were just loaded.
 			$this->noMoreRoutes = true;
 		}
-		
+
 		// Add routes if defined in a "routes.php" file in the base directory.
 		if (file_exists("{$this->server['DOCUMENT_ROOT']}$this->relativePath/routes.php")) {
 			$app = $this;
@@ -119,6 +121,32 @@ class SlimTwigWrapper
 		return $dir;
 	}
 
+    /**
+     * Convert the passed in callback into a proper middleware callback.
+     */
+    private function makeMiddlewareCallback($callback)
+    {
+        $wrapper = $this;
+		$middlewareCallback = $callback->bindTo($wrapper);
+		$middlewareCall = function ($request, $response, $next) use ($wrapper, $middlewareCallback) {
+			$wrapper->request = $request;
+			$wrapper->response = $response;
+			$wrapper->next = $next;
+			$wrapper->wasNextCalled = false;
+			$callNext = function () use ($wrapper) {
+				$wrapper->response = call_user_func($wrapper->next, $wrapper->request, $wrapper->response);
+				$wrapper->wasNextCalled = true;
+			};
+			$middlewareCallback($callNext);
+			if (!$wrapper->wasNextCalled) {
+				$callNext();
+			}
+			return $wrapper->response;
+		};
+		return $middlewareCallback;
+    }
+
+
 	/**
 	 * This is used to encode a string so that it is safe for print out.
 	 * This can be overwritten if a different encoding process is desired.
@@ -143,7 +171,7 @@ class SlimTwigWrapper
 	{
 		$c = $this->slim->getContainer();
 		$c[$name] = $callback->bindTo($this->slim, $this->slim);
-		
+
 		return $this;
 	}
 
@@ -153,36 +181,37 @@ class SlimTwigWrapper
 	public function addGlobal($name, $value)
 	{
 		$this->twig->addGlobal($name, $value);
-		
+
 		return $this;
 	}
-	
+
 	/**
 	 * Add a middleware.
 	 */
 	public function addMiddleware($callback)
 	{
-		$wrapper = $this;
-		$middlewareCallback = $callback->bindTo($wrapper);
-		$middlewareCall = function ($request, $response, $next) use ($wrapper, $middlewareCallback) {
-			$wrapper->request = $request;
-			$wrapper->response = $response;
-			$wrapper->next = $next;
-			$wrapper->wasNextCalled = false;
-			$callNext = function () use ($wrapper) {
-				$wrapper->response = call_user_func($wrapper->next, $wrapper->request, $wrapper->response);
-				$wrapper->wasNextCalled = true;
-			};
-			$middlewareCallback($callNext);
-			if (!$wrapper->wasNextCalled) {
-				$callNext();
-			}
-			return $wrapper->response;
-		};
-		$this->slim->add($middlewareCall);
-		
+		$this->slim->add($this->makeMiddlewareCallback($callback));
 		return $this;
 	}
+
+    /**
+     * Define a middleware to use for a group.
+     */
+    public function addGroupMiddleware($path, $callback)
+    {
+        $this->groupMiddlewares[$path] = $this->makeMiddlewareCallback($callback);
+        return $this;
+    }
+
+    /**
+     * Define a middleware to use for the last defined route.
+     */
+    public function addRouteMiddleware($callback)
+    {
+        if (!$this->lastDefinedRoute) { return this; }
+        $this->lastDefinedRoute->add($this->makeMiddlewareCallback($callback));
+        return $this;
+    }
 
 	/**
 	 * Run the slim process.
@@ -199,11 +228,11 @@ class SlimTwigWrapper
 	{
 		if ($this->noMoreRoutes) { return false; }
 		if ($path && substr($path, 0, 1) !== '/') { $path = '/' . $path; }
-		
+
 		if ($this->realURIDirectory !== '/') {
 			$path = $this->realURIDirectory . $path;
 		}
-		
+
 		$methods = explode(',', $methods);
 		foreach ($methods as $i => $m) {
 			$m = trim($m);
@@ -218,9 +247,18 @@ class SlimTwigWrapper
 			$routeCallback($args);
 			return $response;
 		};
-		$this->slim->map($methods, $path, $responseCall);
-		
-		return $this;
+
+		$route = $this->slim->map($methods, $path, $responseCall);
+        // Check for any matching group middleware.
+        foreach ($this->groupMiddlewares as $path => $middlwareCallback) {
+            if (substr($path, 0, strlen($path)) === $path) {
+                $route->add($middlewareCallback);
+            }
+        }
+        // Store this route so subsequent calls to addRouteMiddleware know to attach it to this route.
+        $this->lastDefinedRoute = $route;
+
+        return $this;
 	}
 
 	/**
@@ -252,7 +290,7 @@ class SlimTwigWrapper
 	{
 		$this->response->withRedirect($this->basePath . '/instructions');
 	}
-	
+
 	/**
 	 * Get an input parameter first from PUT, then POST, then GET, and if not found, NULL is returned.
 	 */
@@ -261,7 +299,7 @@ class SlimTwigWrapper
 		if (empty($this->request)) { return null; }
 		return $this->request->getParam($name);
 	}
-	 
+
 	 /**
 	  * Shortcut to write out to the Response object if it exists, to the output buffer otherwise.
 	  */
@@ -273,7 +311,7 @@ class SlimTwigWrapper
 			print $str;
 		}
 	 }
-	  
+
 
 	/**
 	 * Get environment variables.
