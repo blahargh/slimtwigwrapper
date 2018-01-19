@@ -35,6 +35,7 @@ class SlimTwigWrapper
 	public function __construct()
 	{
 		$this->server = $this->encode($_SERVER);
+        $this->server['DOCUMENT_ROOT'] = __DIR__; //<-- Make sure the DOCUMENT_ROOT is the path of the main index.php file. This is mainly for those servers where the main DOCUMENT_ROOT serves multiple sites in subdirectories.
 		$this->root = dirname($this->server['SCRIPT_NAME']);
 		$parts = explode('?', $this->server['REQUEST_URI']);
 		$this->host = $this->server['HTTP_HOST'];
