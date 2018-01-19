@@ -10,6 +10,7 @@ class SlimTwigWrapper
 	private $app;
 	private $noMoreRoutes = false;       // Flag to determine if subsequent routes should even be loaded.
     private $groupMiddlewares = array(); // Storage for defined group middlewares.
+    private $routes = array();           // Store the routes so they can be manipulated prior to calling \Slim\App::run();
     private $lastDefinedRoute = null;    // Store the last defined route, so subsequent calls to addRouteMiddleware know to which route to attach the middleware.
 
 	public $twig;
@@ -35,7 +36,7 @@ class SlimTwigWrapper
 	public function __construct()
 	{
 		$this->server = $this->encode($_SERVER);
-        $this->server['DOCUMENT_ROOT'] = __DIR__; //<-- Make sure the DOCUMENT_ROOT is the path of the main index.php file. This is mainly for those servers where the main DOCUMENT_ROOT serves multiple sites in subdirectories.
+		$this->server['DOCUMENT_ROOT'] = __DIR__; //<-- Make sure the DOCUMENT_ROOT is the path of the main index.php file.
 		$this->root = dirname($this->server['SCRIPT_NAME']);
 		$parts = explode('?', $this->server['REQUEST_URI']);
 		$this->host = $this->server['HTTP_HOST'];
@@ -200,7 +201,8 @@ class SlimTwigWrapper
      */
     public function addGroupMiddleware($path, $callback)
     {
-        $this->groupMiddlewares[$path] = $this->makeMiddlewareCallback($callback);
+        if (!isset($this->groupMiddlewares[$path])) { $this->groupMiddlewares[$path] = array(); }
+        $this->groupMiddlewares[$path][] = $this->makeMiddlewareCallback($callback);
         return $this;
     }
 
@@ -219,6 +221,14 @@ class SlimTwigWrapper
 	 */
 	public function run()
 	{
+        // Attach group middlewares to the proper routes at this point.
+        foreach ($this->routes as $route) {
+            if (!isset($route->_middlewaresToAttach)) { continue; }
+            foreach ($route->_middlewaresToAttach as $middlewareCallback) {
+                $route->add($middlewareCallback);
+            }
+        }
+        // Run Slim.
 		$this->slim->run();
 	}
 
@@ -250,12 +260,19 @@ class SlimTwigWrapper
 		};
 
 		$route = $this->slim->map($methods, $path, $responseCall);
-        // Check for any matching group middleware.
-        foreach ($this->groupMiddlewares as $path => $middlewareCallback) {
+        // Check for any group middlewares and store them to this route.
+        // They will be attached prior to running \Slim\App::run(), so their
+        // order of execution is similar to how Slim does it.
+        $route->_middlewaresToAttach = array();
+        foreach ($this->groupMiddlewares as $path => $middlewareCallbacks) {
             if (substr($path, 0, strlen($path)) === $path) {
-                $route->add($middlewareCallback);
+                foreach ($middlewareCallbacks as $middlewareCallback) {
+                    $route->_middlewaresToAttach[] = $middlewareCallback;
+                }
             }
         }
+        // Store this route so it can be referenced later.
+        $this->routes[$path] = $route;
         // Store this route so subsequent calls to addRouteMiddleware know to attach it to this route.
         $this->lastDefinedRoute = $route;
 
