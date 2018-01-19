@@ -129,7 +129,7 @@ $app->addMiddleware(function($callNext) {
 
 ### Add middleware for a route group:
 ``` php
-$app->addGroupMiddleware('\accounts', function($callNext) {
+$app->addGroupMiddleware('/accounts', function($callNext) {
     $this->write('Middleware for the "accounts" sections.');
 });
 
