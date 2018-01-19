@@ -23,14 +23,14 @@ $app->route('get', '/', function() {
     'myVar' => 'abc123',
     'anotherVar' => 999,
   ]);
-  
+
   // This does the same thing as above. Since this is through the root
   // app, the prefix '/' does not make a difference.
   $this->render('/home.html', [
     'myVar' => 'abc123',
     'anotherVar' => 999,
   ]);
-  
+
   // Injecting HTML.
   $this->write('Forcing HTML in the response.');
 });
@@ -105,7 +105,7 @@ In the Twig template file:
 </p>
 ```
 
-### Add middleware:
+### Add middleware for all routes:
 ``` php
 $app->addMiddleware(function($callNext) {
   $this->write('Middleware: Before content!');
@@ -115,7 +115,7 @@ $app->addMiddleware(function($callNext) {
 
 $app->addMiddleware(function($callNext) {
   $this->write('This middleware only do stuff before the content. The call to "next" is done automatically if not envoked in this closure.');
-  
+
   // Direct access to parameters passed in middleware callbacks by Slim:
   // $this->request
   // $this->response
@@ -124,6 +124,40 @@ $app->addMiddleware(function($callNext) {
   //    $this->response->write('Header');
   //    $this->response = $this->next($this->request, $this->response); //<-- Move on to the next middleware or main content.
   //    $this->response->write('Footer');
+});
+```
+
+### Add middleware for a route group:
+``` php
+$app->addGroupMiddleware('\accounts', function($callNext) {
+    $this->write('Middleware for the "accounts" sections.');
+});
+
+$app->route('get', '/accounts/list', function() {
+    $this->render('accounts/list.html');
+});
+
+$app->route('get, post', '/account/edit/{id}', function($args) {
+    $data = getAccountDataFromDB($args['id']+);
+    if ($this->getParam('save')) {
+        // ... update the DB ...
+    }
+    $this->render('accounts/edit.html', [
+        'data' => $data,
+    ]);
+});
+```
+
+### Add middleware for a route:
+Calls to `addRouteMiddleware()` will attach the middleware to the last defined route. If no route have yet been defined,
+then the middleware is ignored.
+``` php
+$app->route('get', '/recipes/list', function() {
+    $this->render('recipes/list.html');
+})->addRouteMiddleware(function($callNext) {
+    $this->write('Middleware 1 for the recipe list page.');
+})->addRouteMiddleware(function($callNext) {
+    $this->write('Middleware 2 for the recipe list page.');
 });
 ```
 
