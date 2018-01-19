@@ -251,7 +251,7 @@ class SlimTwigWrapper
 
 		$route = $this->slim->map($methods, $path, $responseCall);
         // Check for any matching group middleware.
-        foreach ($this->groupMiddlewares as $path => $middlwareCallback) {
+        foreach ($this->groupMiddlewares as $path => $middlewareCallback) {
             if (substr($path, 0, strlen($path)) === $path) {
                 $route->add($middlewareCallback);
             }
