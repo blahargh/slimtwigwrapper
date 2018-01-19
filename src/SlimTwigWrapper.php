@@ -144,7 +144,7 @@ class SlimTwigWrapper
 			}
 			return $wrapper->response;
 		};
-		return $middlewareCallback;
+		return $middlewareCall;
     }
 
 
