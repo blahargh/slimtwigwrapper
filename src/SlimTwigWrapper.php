@@ -9,9 +9,9 @@ class SlimTwigWrapper
 {
 	private $app;
 	private $noMoreRoutes = false;       // Flag to determine if subsequent routes should even be loaded.
-    private $groupMiddlewares = array(); // Storage for defined group middlewares.
-    private $routes = array();           // Store the routes so they can be manipulated prior to calling \Slim\App::run();
-    private $lastDefinedRoute = null;    // Store the last defined route, so subsequent calls to addRouteMiddleware know to which route to attach the middleware.
+	private $groupMiddlewares = array(); // Storage for defined group middlewares.
+	private $routes = array();           // Store the routes so they can be manipulated prior to calling \Slim\App::run();
+	private $lastDefinedRoute = null;    // Store the last defined route, so subsequent calls to addRouteMiddleware know to which route to attach the middleware.
 
 	public $twig;
 	public $request;       // Changes per route/middleware.
@@ -123,12 +123,12 @@ class SlimTwigWrapper
 		return $dir;
 	}
 
-    /**
-     * Convert the passed in callback into a proper middleware callback.
-     */
-    private function makeMiddlewareCallback($callback)
-    {
-        $wrapper = $this;
+	/**
+	* Convert the passed in callback into a proper middleware callback.
+	*/
+	private function makeMiddlewareCallback($callback)
+	{
+	$wrapper = $this;
 		$middlewareCallback = $callback->bindTo($wrapper);
 		$middlewareCall = function ($request, $response, $next) use ($wrapper, $middlewareCallback) {
 			$wrapper->request = $request;
@@ -146,7 +146,7 @@ class SlimTwigWrapper
 			return $wrapper->response;
 		};
 		return $middlewareCall;
-    }
+	}
 
 
 	/**
@@ -196,39 +196,39 @@ class SlimTwigWrapper
 		return $this;
 	}
 
-    /**
-     * Define a middleware to use for a group.
-     */
-    public function addGroupMiddleware($path, $callback)
-    {
-        if (!isset($this->groupMiddlewares[$path])) { $this->groupMiddlewares[$path] = array(); }
-        $this->groupMiddlewares[$path][] = $this->makeMiddlewareCallback($callback);
-        return $this;
-    }
+	/**
+	* Define a middleware to use for a group.
+	*/
+	public function addGroupMiddleware($path, $callback)
+	{
+		if (!isset($this->groupMiddlewares[$path])) { $this->groupMiddlewares[$path] = array(); }
+		$this->groupMiddlewares[$path][] = $this->makeMiddlewareCallback($callback);
+		return $this;
+	}
 
-    /**
-     * Define a middleware to use for the last defined route.
-     */
-    public function addRouteMiddleware($callback)
-    {
-        if (!$this->lastDefinedRoute) { return this; }
-        $this->lastDefinedRoute->add($this->makeMiddlewareCallback($callback));
-        return $this;
-    }
+	/**
+	* Define a middleware to use for the last defined route.
+	*/
+	public function addRouteMiddleware($callback)
+	{
+		if (!$this->lastDefinedRoute) { return this; }
+		$this->lastDefinedRoute->add($this->makeMiddlewareCallback($callback));
+		return $this;
+	}
 
 	/**
 	 * Run the slim process.
 	 */
 	public function run()
 	{
-        // Attach group middlewares to the proper routes at this point.
-        foreach ($this->routes as $route) {
-            if (!isset($route->_middlewaresToAttach)) { continue; }
-            foreach ($route->_middlewaresToAttach as $middlewareCallback) {
-                $route->add($middlewareCallback);
-            }
-        }
-        // Run Slim.
+		// Attach group middlewares to the proper routes at this point.
+		foreach ($this->routes as $route) {
+			if (!isset($route->_middlewaresToAttach)) { continue; }
+			foreach ($route->_middlewaresToAttach as $middlewareCallback) {
+				$route->add($middlewareCallback);
+			}
+		}
+		// Run Slim.
 		$this->slim->run();
 	}
 
@@ -238,7 +238,8 @@ class SlimTwigWrapper
 	public function route($methods, $path, $callback)
 	{
 		if ($this->noMoreRoutes) { return false; }
-		if ($path && substr($path, 0, 1) !== '/') { $path = '/' . $path; }
+		if (!is_string($path)) { return false; }
+		if (substr($path, 0, 1) !== '/') { $path = '/' . $path; }
 
 		if ($this->realURIDirectory !== '/') {
 			$path = $this->realURIDirectory . $path;
