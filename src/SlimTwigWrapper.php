@@ -33,10 +33,10 @@ class SlimTwigWrapper
 	public $requestMethod;
 
 
-	public function __construct()
+	public function __construct($documentRoot = null)
 	{
 		$this->server = $this->encode($_SERVER);
-		$this->server['DOCUMENT_ROOT'] = __DIR__; //<-- Make sure the DOCUMENT_ROOT is the path of the main index.php file.
+		if ($documentRoot) { $this->server['DOCUMENT_ROOT'] = $documentRoot; } //<-- Allow overriding the DOCUMENT_ROOT so the developer can set it in the same directory as the main index.php file, if need be.
 		$this->root = dirname($this->server['SCRIPT_NAME']);
 		$parts = explode('?', $this->server['REQUEST_URI']);
 		$this->host = $this->server['HTTP_HOST'];
