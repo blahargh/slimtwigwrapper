@@ -33,21 +33,35 @@ class SlimTwigWrapper
 	public $requestMethod;
 
 
-	public function __construct($documentRoot = null)
+	public function __construct($documentRootAppend = null)
 	{
 		$this->server = $this->encode($_SERVER);
-		if ($documentRoot) { $this->server['DOCUMENT_ROOT'] = $documentRoot; } //<-- Allow overriding the DOCUMENT_ROOT so the developer can set it in the same directory as the main index.php file, if need be.
-		$this->root = dirname($this->server['SCRIPT_NAME']);
-		$parts = explode('?', $this->server['REQUEST_URI']);
-		$this->host = $this->server['HTTP_HOST'];
-		$this->domainURI = 'http' . (!empty($this->server['HTTPS']) && $this->server['HTTPS'] === 'on' ? 's' : '') . '://' . $this->server['HTTP_HOST'];
-		$this->requestURI = '/' . trim($parts[0], '/*'); //<-- Request URI should be relative to the domain. Remove trailing "*" so user can't access a wildcard route directly.
-		$this->realURIDirectory = $this->getRealDirectory(); //<-- "/" or "/some/path"
-		$this->queryString = isset($this->server['QUERY_STRING']) ? $this->server['QUERY_STRING'] : '';
-		$this->selfURI = $this->server['REQUEST_URI'];
-		$this->requestMethod = strtolower($this->server['REQUEST_METHOD']);
-		$this->absolutePath = realpath($this->server['DOCUMENT_ROOT'] . $this->root);
-		$this->relativePath = str_replace('\\', '/', $this->root);
+        $this->server['ROOT_APPEND'] = '';
+		if ($documentRootAppend) {
+            // Allow specifying a directory in the DOCUMENT_ROOT to make into the new DOCUMENT_ROOT. This will allow
+            // having multiple independent sites that sit under one domain server.
+            // For example:
+            //   $_SERVER['DOCUMENT_ROOT'] = '/var/www/html'
+            //   $documentRoot = 'mysite'
+            //   In this scenario, "mysite" will be the subdirectory to attach, so $this->server['DOCUMENT_ROOT'] will
+            //   be set to "/var/www/html/mysite", and other server values will be adjusted accordingly.
+            $documentRootAppend = str_replace('\\', '/', trim($documentRootAppend));
+            if (substr($documentRootAppend, 0, 1) !== '/') { $documentRootAppend = '/' . $documentRootAppend; }
+            $this->server['ROOT_APPEND'] = $documentRootAppend;
+            $this->server['DOCUMENT_ROOT'] = realpath($this->server['DOCUMENT_ROOT'] . $documentRootAppend);
+            $length = strlen($documentRootAppend);
+            if (substr($this->server['REQUEST_URI'], 0, $length) === $documentRootAppend) { $this->server['REQUEST_URI'] = substr($this->server['REQUEST_URI'], $length); }
+            if (substr($this->server['SCRIPT_NAME'], 0, $length) === $documentRootAppend) { $this->server['SCRIPT_NAME'] = substr($this->server['SCRIPT_NAME'], $length); }
+        }
+
+        $this->server['DOMAIN_URI'] = 'http' . (!empty($this->server['HTTPS']) && $this->server['HTTPS'] === 'on' ? 's' : '') . '://' . $this->server['HTTP_HOST'];
+        $this->server['BASE_PATH'] = $this->server['ROOT_APPEND'];
+        $this->server['REQUEST_METHOD'] = strtolower($this->server['REQUEST_METHOD']);
+        $parts = explode('?', $this->server['REQUEST_URI']);
+        $this->server['REQUEST_URI'] = '/' . trim($parts[0], '/*'); //<-- Request URI should be relative to the domain. Remove trailing "*" so user can't access a wildcard route directly.
+        if (!isset($this->server['QUERY_STRING'])) { $this->server['QUERY_STRING'] = ''; }
+
+        $this->realURIDirectory = $this->getRealDirectory(); //<-- "/" or "/some/path"
 
 		$container = new \Slim\Container();
 		$this->slim = new \Slim\App($container);
@@ -76,13 +90,11 @@ class SlimTwigWrapper
 			}
 		}
 
-		$this->addGlobal('host', $this->host);
-		$this->addGlobal('domainURI', $this->domainURI);
-		$this->addGlobal('requestURI', $this->requestURI);
-		$this->addGlobal('selfURI', $this->selfURI);
-		$this->addGlobal('relativePath', $this->relativePath);
-		$this->addGlobal('realURIDirectory', $this->realURIDirectory);
-		$this->addGlobal('basePath', $this->root);
+		$this->addGlobal('host', $this->server['HTTP_HOST']);
+		$this->addGlobal('domainURI', $this->server['DOMAIN_URI']);
+		$this->addGlobal('requestURI', $this->server['REQUEST_URI']);
+		$this->addGlobal('basePath', $this->server['BASE_PATH']);
+        $this->addGlobal('realURIDirectory', $this->realURIDirectory);
 
 		// Add routes if defined in a "routes.php" file in a real directory that is a part of the URL.
 		$routesFile = 'routes.php';
@@ -94,9 +106,9 @@ class SlimTwigWrapper
 		}
 
 		// Add routes if defined in a "routes.php" file in the base directory.
-		if (file_exists("{$this->server['DOCUMENT_ROOT']}$this->relativePath/routes.php")) {
+		if (file_exists("{$this->server['DOCUMENT_ROOT']}/routes.php")) {
 			$app = $this;
-			include "{$this->server['DOCUMENT_ROOT']}$this->relativePath/routes.php";
+			include "{$this->server['DOCUMENT_ROOT']}/routes.php";
 		}
 	}
 
@@ -106,7 +118,7 @@ class SlimTwigWrapper
 	 */
 	private function getRealDirectory($string = null)
 	{
-		if ($string === null) { $string = $this->requestURI; }
+		if ($string === null) { $string = $this->server['REQUEST_URI']; }
 
 		$string = str_replace('\\', '/', trim($string));
 		$tokens = explode('/', trim($string, '/'));
@@ -338,15 +350,6 @@ class SlimTwigWrapper
 	public function getVars()
 	{
 		return array(
-			'root' => $this->root,
-			'host' => $this->host,
-			'domainURI' => $this->domainURI,
-			'requestURI' => $this->requestURI,
-			'queryString' => $this->queryString,
-			'selfURI' => $this->selfURI,
-			'requestMethod' => $this->requestMethod,
-			'absolutePath' => $this->absolutePath,
-			'relativePath' => $this->relativePath,
 			'realURIDirectory' => $this->realURIDirectory,
 		) + $this->server;
 	}
