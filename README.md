@@ -14,7 +14,7 @@ $app->run();
 ```
 
 ### Routes in _routes.php_:
-Root routes file: `/var/www/html/routes.php`  
+Root routes file: `/var/www/html/routes.php` or in the index file, `/var/www/html/index.php`
 ``` php
 <?php
 
