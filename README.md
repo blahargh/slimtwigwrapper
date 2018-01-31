@@ -97,6 +97,7 @@ $app->route('get', '/aaa', function() {
 ### Add global Twig variables:
 ``` php
 $app->addGlobal('varname', 'value123');
+// This is just a shortcut for $this->twig->addGlobal('varname', 'value123');
 ```
 
 In the Twig template file:
