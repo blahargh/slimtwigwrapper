@@ -18,8 +18,8 @@ Root routes file: `/var/www/html/routes.php` or in the index file, `/var/www/htm
 ``` php
 <?php
 
-// $app->route('get', '/', function() {  --OR--
-$app->route('get', '', function() {
+// $app->route('get', '/', function () {  --OR--
+$app->route('get', '', function () {
   $this->render('home.html', [
     'myVar' => 'abc123',
     'anotherVar' => 999,
@@ -37,7 +37,7 @@ $app->route('get', '', function() {
 });
 
 // Any route allowed in Slim should work.
-$app->route('get', '/abc[/{userid}]', function($args) {
+$app->route('get', '/abc[/{userid}]', function ($args) {
   $userID = isset($args['userid']) ? $args['userid'] : null;
   $this->render('info.html', [
     'userID' => $userID,
@@ -49,7 +49,7 @@ $app->run();
 
 ### Get input parameters:
 ``` php
-$app->route('get, post', '/blah', function() {
+$app->route('get, post', '/blah', function () {
   $blah1 = $this->getParam('input_blah1');
   $blah2 = $this->getParam('input_blah2');
   // getParam() is just a shortcut to $this->request->getParam().
@@ -58,7 +58,7 @@ $app->route('get, post', '/blah', function() {
 
 ### Accessing the Request, Response, Twig, and Slim objects, if needed:
 ``` php
-$app->route('post', '/aaa', function() {
+$app->route('post', '/aaa', function () {
   $formInput = $this->request->getParsedBody(); // Get POST data.
   $slimDependencyContainer = $this->slim->getContainer();
   $this->response->write(
@@ -71,7 +71,7 @@ $app->route('post', '/aaa', function() {
 
 ### Shortcut to writing to the Response object:
 ``` php
-$app->route('get', '/blah', function() {
+$app->route('get', '/blah', function () {
   $this->write('Some text goes here!');
   // Since there is a valid Response object at this point, the string is written to it.
   // If there was no valid Response object, the string would be written to the output buffer (PHP's print() function).
@@ -81,13 +81,13 @@ $app->route('get', '/blah', function() {
 
 ### Dependency Injection:
 ``` php
-$app->addDependency('flashMessenger', function($container) {
+$app->addDependency('flashMessenger', function ($container) {
   $myOtherDependency = $container->get('a_different_dependency');
   // Do something with $myOtherDependency ... blah blah
   return new \App\CustomFlashMessenger();
 });
 
-$app->route('get', '/aaa', function() {
+$app->route('get', '/aaa', function () {
   // Access any dependency in the container through the Slim object.
   $this->slim->flashMessenger->add('notice', 'Blah blah some text.');
   $this->render('aaa/home.html');
@@ -110,13 +110,13 @@ In the Twig template file:
 
 ### Add middleware for all routes:
 ``` php
-$app->addMiddleware(function($callNext) {
+$app->addMiddleware(function ($callNext) {
   $this->write('Middleware: Before content!');
   $callNext(); //<-- Move on to the next middleware or main content.
   $this->write('Middleware: After content!');
 });
 
-$app->addMiddleware(function($callNext) {
+$app->addMiddleware(function ($callNext) {
   $this->write('This middleware only do stuff before the content. The call to "next" is done automatically if not envoked in this closure.');
 
   // Direct access to parameters passed in middleware callbacks by Slim:
@@ -131,16 +131,17 @@ $app->addMiddleware(function($callNext) {
 ```
 
 ### Add middleware for a route group:
+The middleware(s) will be called for any route that starts with the specified group route.
 ``` php
-$app->addGroupMiddleware('/accounts', function($callNext) {
+$app->addGroupMiddleware('/accounts', function ($callNext) {
     $this->write('Middleware for the "accounts" sections.');
 });
 
-$app->route('get', '/accounts/list', function() {
+$app->route('get', '/accounts/list', function () {
     $this->render('accounts/list.html');
 });
 
-$app->route('get, post', '/account/edit/{id}', function($args) {
+$app->route('get, post', '/account/edit/{id}', function ($args) {
     $data = getAccountDataFromDB($args['id']+);
     if ($this->getParam('save')) {
         // ... update the DB ...
@@ -154,10 +155,11 @@ $app->route('get, post', '/account/edit/{id}', function($args) {
 ### Add middleware for a route:
 Calls to `addRouteMiddleware()` will attach the middleware to the last defined route. If no route have yet been defined,
 then the middleware is ignored.
+The middleware(s) will be called only if the specified route matches exactly.
 ``` php
-$app->route('get', '/recipes/list', function() {
+$app->route('get', '/recipes/list', function () {
     $this->render('recipes/list.html');
-})->addRouteMiddleware(function($callNext) {
+})->addRouteMiddleware(function ($callNext) {
     $this->write('Middleware 1 for the recipe list page.');
 })->addRouteMiddleware(function($callNext) {
     $this->write('Middleware 2 for the recipe list page.');
@@ -167,33 +169,33 @@ $app->route('get', '/recipes/list', function() {
 ### Middleware order of execution:
 Similar to Slim's behavior, global middlewares are processed first, then group, then route.
 ``` php
-$app->addMiddleware(function($next) {
+$app->addMiddleware(function ($next) {
     $this->write('Global middleware 1<br />');
     $next();
     $this->write('Global middleware 11<br />');
-})->addMiddleware(function($next) {
+})->addMiddleware(function ($next) {
     $this->write('Global middleware 2<br />');
     $next();
     $this->write('Global middleware 22<br />');
 });
 
-$app->addGroupMiddleware('test', function($next) {
+$app->addGroupMiddleware('test', function ($next) {
     $this->write('Group middleware 1<br />');
     $next();
     $this->write('Group middleware 11<br />');
-})->addGroupMiddleware('test', function($next) {
+})->addGroupMiddleware('test', function ($next) {
     $this->write('Group middleware 2<br />');
     $next();
     $this->write('Group middleware 22<br />');
 });
 
-$app->route('get', 'test', function() {
+$app->route('get', 'test', function () {
     $this->write('TEST!!!<br />');
-})->addRouteMiddleware(function($next) {
+})->addRouteMiddleware(function ($next) {
     $this->write('Route middleware 1<br />');
     $next();
     $this->write('Route middleware 11<br />');
-})->addRouteMiddleware(function($next) {
+})->addRouteMiddleware(function ($next) {
     $this->write('Route middleware 2<br />');
     $next();
     $this->write('Route middleware 22<br />');
@@ -220,7 +222,7 @@ Global middleware 22
 Root routes file: `/var/www/html/routes.php` or in `/var/www/html/index.php`  
 Subroot routes file: `/var/www/html/accounts/routes.php`
 
-Subroots are **actual** decendant directories of the root directory, not just a URL path. In this case, `/var/www/html` is the root directory and `accounts` is a subroot.  
+Subroots are **actual** decendant directories of the root directory, not just a URL path. In this case, `/var/www/html` is the root directory and `accounts` (`/var/www/html/accounts`) is a subroot.  
 
 All routes in a subroot `routes.php` file will be treated as if having been prefixed with that directory path. That route file will also only be loaded if the user goes to that directory through the URL. The root route file is not loaded if the user goes to a subroot directory. Basically, subroots can contain their own routes and view files within themselves, and the whole site can be compartmentalized by subroots. Models may also be secluded, but since they typically need to be available throughout the site, it's most likely best to have them relative to the root directory, such as `/var/www/html/models`.  
 
@@ -233,7 +235,7 @@ If a view file in root, or another subroot, needs to be accessed, prepend a '/' 
 // In /var/www/html/accounts/routes.php:
 
 // URL: http://mydomain.com/accounts
-$app->route('get', '', function() {
+$app->route('get', '', function () {
   // In subroots, template path prefixed with a '/' assumes that it is relative to the root directory.
   // Without the '/', it is treated as relative to the subroot directory.
   $this->render('home.html'); //<-- (Subroot view call) Looks for '/var/www/html/accounts/views/home.html', then '/var/www/html/accounts/home.html', then 'var/www/html/views/home.html', then finally 'var/www/html/home.html'.
@@ -302,21 +304,21 @@ foreach ($routeFiles as $route) {
     require $route;
 }
 
-$app->route('get', '/', function() {
+$app->route('get', '/', function () {
   $this->render('home.html');
 });
 
 
 // In routes/archive.php                                             <A
-$app->route('get', '/archive', function() {                          <A
+$app->route('get', '/archive', function () {                          <A
   $this->render('archive/list.html');                                <A
 });                                                                  <A
 
 // In routes/tools-user-info.php                                     <B
-$app->route('get', '/tools/user-info', function() {                  <B
+$app->route('get', '/tools/user-info', function () {                  <B
   $this->render('tools/user-info/search.html');                      <B
 });                                                                  <B
-$app->route('get', '/tools/user-info/edit/{id}', function($args) {   <B
+$app->route('get', '/tools/user-info/edit/{id}', function ($args) {  <B
   $this->render('tools/user-info/view.html', ['id'=>$args['id']]);   <B
 });                                                                  <B
 ```
@@ -361,20 +363,20 @@ File structure:
 Routes:
 -------
 // In routes.php
-$app->route('get', '/', function() {
+$app->route('get', '/', function () {
   $this->render('home.html');
 });
 
 // In archive/routes.php                                        <A
-$app->route('get', '', function() {                             <A
+$app->route('get', '', function () {                            <A
   $this->render('views/list.html');                             <A
 });                                                             <A
 
 // In tools/user-info/routes.php                                <B
-$app->route('get', '', function() {                             <B
+$app->route('get', '', function () {                            <B
   $this->render('views/search.html');                           <B
 });                                                             <B
-$app->route('get', 'edit/{id}', function($args) {               <B
+$app->route('get', 'edit/{id}', function ($args) {              <B
   $this->render('views/view.html', ['id'=>$args['id']]);        <B
 });                                                             <B
 ```
