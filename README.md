@@ -18,7 +18,8 @@ Root routes file: `/var/www/html/routes.php`
 ``` php
 <?php
 
-$app->route('get', '/', function() {
+// $app->route('get', '/', function() {  --OR--
+$app->route('get', '', function() {
   $this->render('home.html', [
     'myVar' => 'abc123',
     'anotherVar' => 999,
