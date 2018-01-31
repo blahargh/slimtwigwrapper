@@ -88,6 +88,7 @@ $app->addDependency('flashMessenger', function($container) {
 });
 
 $app->route('get', '/aaa', function() {
+  // Access any dependencies in the container through the Slim object.
   $this->slim->flashMessenger->add('notice', 'Blah blah some text.');
   $this->render('aaa/home.html');
 });
