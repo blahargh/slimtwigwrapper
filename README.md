@@ -161,7 +161,7 @@ $app->route('get', '/recipes/list', function () {
     $this->render('recipes/list.html');
 })->addRouteMiddleware(function ($callNext) {
     $this->write('Middleware 1 for the recipe list page.');
-})->addRouteMiddleware(function($callNext) {
+})->addRouteMiddleware(function ($callNext) {
     $this->write('Middleware 2 for the recipe list page.');
 });
 ```
@@ -310,12 +310,12 @@ $app->route('get', '/', function () {
 
 
 // In routes/archive.php                                             <A
-$app->route('get', '/archive', function () {                          <A
+$app->route('get', '/archive', function () {                         <A
   $this->render('archive/list.html');                                <A
 });                                                                  <A
 
 // In routes/tools-user-info.php                                     <B
-$app->route('get', '/tools/user-info', function () {                  <B
+$app->route('get', '/tools/user-info', function () {                 <B
   $this->render('tools/user-info/search.html');                      <B
 });                                                                  <B
 $app->route('get', '/tools/user-info/edit/{id}', function ($args) {  <B
