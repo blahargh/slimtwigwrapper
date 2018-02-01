@@ -33,7 +33,7 @@ class SlimTwigWrapper
     public $requestMethod;
 
 
-    public function __construct($documentRootAppend = null)
+    public function __construct($documentRootAppend = null, \Slim\App $slim = null)
     {
         $this->server = $this->encode($_SERVER);
         $this->server['ROOT_APPEND'] = '';
@@ -63,8 +63,13 @@ class SlimTwigWrapper
 
         $this->realURIDirectory = $this->getRealDirectory(); //<-- "/" or "/some/path"
 
-        $container = new \Slim\Container();
-        $this->slim = new \Slim\App($container);
+        if ($slim === null) {
+            $this->container = new \Slim\Container();
+            $this->slim = new \Slim\App($this->container);
+        } else {
+            $this->slim = $slim;
+            $this->container = $slim->getContainer();
+        }
 
         // Make sure the "views" directory exists before loading Twig.
         if (!is_dir('views')) {
@@ -331,17 +336,31 @@ class SlimTwigWrapper
         return $this->request->getParam($name);
     }
 
-     /**
-      * Shortcut to write out to the Response object if it exists, to the output buffer otherwise.
-      */
-     public function write($str)
-     {
-         if (!empty($this->response) && method_exists($this->response, 'write')) {
+    /**
+    * Shortcut to write out to the Response object if it exists, to the output buffer otherwise.
+    */
+    public function write($str)
+    {
+        if (!empty($this->response) && method_exists($this->response, 'write')) {
             $this->response->write($str);
         } else {
             print $str;
         }
-     }
+    }
+
+    /**
+     * Set/Get settings.
+     */
+    public function settings($name, $value = null)
+    {
+        $settings = $this->container->get('settings');
+        if ($value === null) {
+            return isset($settings[$name]) ? $settings[$name] : null;
+        } else {
+            $settings[$name] = $value;
+            return $this;
+        }
+    }
 
 
     /**
