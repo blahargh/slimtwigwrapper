@@ -12,6 +12,7 @@ class SlimTwigWrapper
     private $groupMiddlewares = array(); // Storage for defined group middlewares.
     private $routes = array();           // Store the routes so they can be manipulated prior to calling \Slim\App::run();
     private $lastDefinedRoute = null;    // Store the last defined route, so subsequent calls to addRouteMiddleware know to which route to attach the middleware.
+    private $subrootBase = null;
 
     public $twig;
     public $request;       // Changes per route/middleware.
@@ -21,19 +22,10 @@ class SlimTwigWrapper
     public $wasNextCalled; // Changes per middleware.
 
     public $server;
-    public $root;
-    public $host;
-    public $domainURI;
-    public $requestURI;
     public $realURIDirectory;
-    public $queryString;
-    public $selfURI;
-    public $absolutePath;
-    public $relativePath;
-    public $requestMethod;
 
 
-    public function __construct($documentRootAppend = null, \Slim\App $slim = null)
+    public function __construct($documentRootAppend = null, \Slim\App $slim = null, $subrootBase = null)
     {
         $this->server = $this->encode($_SERVER);
         $this->server['ROOT_APPEND'] = '';
@@ -53,6 +45,7 @@ class SlimTwigWrapper
             if (substr($this->server['REQUEST_URI'], 0, $length) === $documentRootAppend) { $this->server['REQUEST_URI'] = substr($this->server['REQUEST_URI'], $length); }
             if (substr($this->server['SCRIPT_NAME'], 0, $length) === $documentRootAppend) { $this->server['SCRIPT_NAME'] = substr($this->server['SCRIPT_NAME'], $length); }
         }
+        $this->subrootBase = $subrootBase;
 
         $this->server['DOMAIN_URI'] = 'http' . (!empty($this->server['HTTPS']) && $this->server['HTTPS'] === 'on' ? 's' : '') . '://' . $this->server['HTTP_HOST'];
         $this->server['BASE_PATH'] = $this->server['ROOT_APPEND'];
@@ -82,6 +75,9 @@ class SlimTwigWrapper
         // Prepend template subpath.
         if ($this->realURIDirectory !== '' && $this->realURIDirectory !== '/') {
             $path = ltrim($this->realURIDirectory, '/');
+            if ($this->subrootBase) {
+                $path = ltrim($this->subrootBase, '/') . '/' . $path;
+            }
             $templatePaths[] = $path;
             if (file_exists($path . '/views')) {
                 $templatePaths[] = $path . '/views';
@@ -122,7 +118,7 @@ class SlimTwigWrapper
         foreach ($tokens as $part) {
             #$check = ($dir === null ? $part : $dir . '/' . $part);
             $check = "$dir/$part";
-            if (is_dir($this->server['DOCUMENT_ROOT'] . $check)) {
+            if (is_dir($this->server['DOCUMENT_ROOT'] . $this->subrootBase . $check)) {
                 $dir = $check;
             } else {
                 break;
@@ -231,9 +227,9 @@ class SlimTwigWrapper
     {
         // Add routes if defined in a "routes.php" file in a real directory that is a part of the URL.
         $routesFile = 'routes.php';
-        if ($this->realURIDirectory && file_exists("{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile")) {
+        if ($this->realURIDirectory && file_exists("{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}$this->realURIDirectory/$routesFile")) {
             $app = $this;
-            include "{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile";
+            include "{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}$this->realURIDirectory/$routesFile";
             // Set flag to not load further routes so root routes does not conflict with subroot routes that were just loaded.
             $this->noMoreRoutes = true;
         }
