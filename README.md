@@ -23,14 +23,13 @@ Root routes file: `/var/www/html/routes.php` (recommended) or in the index file,
 <?php
 
 // $app->route('get', '/', function () {  --OR--
-$app->route('get', '', function () {
+$app->route('get', '', function () { //<-- The leading '/' does not make a difference.
   $this->render('home.html', [
     'myVar' => 'abc123',
     'anotherVar' => 999,
   ]);
 
-  // This does the same thing as above. Since this is through the root
-  // app, the prefix '/' does not make a difference.
+  // This does the same thing as above, the leading '/' does not make a difference.
   $this->render('/home.html', [
     'myVar' => 'abc123',
     'anotherVar' => 999,
