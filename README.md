@@ -17,6 +17,7 @@ $app->run();
 ***It is highly recommended to use a `routes.php` file instead of merely using
 `index.php`. This will avoid routing conflicts and keep relevant routes
 together, which will help ease maintenance.***
+
 Root routes file: `/var/www/html/routes.php` (recommended) or in the index file, `/var/www/html/index.php`
 ``` php
 <?php
