@@ -75,8 +75,23 @@ class SlimTwigWrapper
         if (!is_dir('views')) {
             mkdir('views');
         }
-        $this->addDependency('twig', function($container) {
-            $loader = new \Twig_Loader_Filesystem(array('views', ''));
+        // Determine which template directories to load and in what order.
+        // Start with the root directory, a template from the root directory can be specified even when calling from
+        // a route in a subroot directory.
+        $templatePaths = array('');
+        // Prepend template subpath.
+        if ($this->realURIDirectory !== '' && $this->realURIDirectory !== '/') {
+            $path = ltrim($this->realURIDirectory, '/');
+            $templatePaths[] = $path;
+            if (file_exists($path . '/views')) {
+                $templatePaths[] = $path . '/views';
+            }
+        }
+        // Lastly, include the root's "views" directory as the last place to check.
+        $templatePaths[] = 'views';
+
+        $this->addDependency('twig', function($container) use ($templatePaths) {
+            $loader = new \Twig_Loader_Filesystem($templatePaths);
             $twig = new \Twig_Environment($loader, array(
                  'cache' => false, //'.local/twig_cache',
             ));
@@ -86,35 +101,11 @@ class SlimTwigWrapper
         // Store the twig object as a property for easy referencing, if need be.
         $this->twig = $this->slim->getContainer()->get('twig');
 
-        // Prepend template subpath.
-        if ($this->realURIDirectory !== '' && $this->realURIDirectory !== '/') {
-            $path = ltrim($this->realURIDirectory, '/');
-            $this->twig->getLoader()->prependPath($path);
-            if (file_exists($path . '/views')) {
-                $this->twig->getLoader()->prependPath($path . '/views');
-            }
-        }
-
         $this->addGlobal('host', $this->server['HTTP_HOST']);
         $this->addGlobal('domainURI', $this->server['DOMAIN_URI']);
         $this->addGlobal('requestURI', $this->server['REQUEST_URI']);
         $this->addGlobal('basePath', $this->server['BASE_PATH']);
         $this->addGlobal('realURIDirectory', $this->realURIDirectory);
-
-        // Add routes if defined in a "routes.php" file in a real directory that is a part of the URL.
-        $routesFile = 'routes.php';
-        if ($this->realURIDirectory && file_exists("{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile")) {
-            $app = $this;
-            include "{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile";
-            // Set flag to not load further routes so root routes does not conflict with subroot routes that were just loaded.
-            $this->noMoreRoutes = true;
-        }
-
-        // Add routes if defined in a "routes.php" file in the base directory.
-        if (file_exists("{$this->server['DOCUMENT_ROOT']}/routes.php")) {
-            $app = $this;
-            include "{$this->server['DOCUMENT_ROOT']}/routes.php";
-        }
     }
 
     /**
@@ -145,7 +136,7 @@ class SlimTwigWrapper
     */
     private function makeMiddlewareCallback($callback)
     {
-    $wrapper = $this;
+        $wrapper = $this;
         $middlewareCallback = $callback->bindTo($wrapper);
         $middlewareCall = function ($request, $response, $next) use ($wrapper, $middlewareCallback) {
             $wrapper->request = $request;
@@ -238,6 +229,21 @@ class SlimTwigWrapper
      */
     public function run()
     {
+        // Add routes if defined in a "routes.php" file in a real directory that is a part of the URL.
+        $routesFile = 'routes.php';
+        if ($this->realURIDirectory && file_exists("{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile")) {
+            $app = $this;
+            include "{$this->server['DOCUMENT_ROOT']}$this->realURIDirectory/$routesFile";
+            // Set flag to not load further routes so root routes does not conflict with subroot routes that were just loaded.
+            $this->noMoreRoutes = true;
+        }
+
+        // Add routes if defined in a "routes.php" file in the base directory.
+        if (!$this->noMoreRoutes && file_exists("{$this->server['DOCUMENT_ROOT']}/routes.php")) {
+            $app = $this;
+            include "{$this->server['DOCUMENT_ROOT']}/routes.php";
+        }
+
         // Attach group middlewares to the proper routes at this point.
         foreach ($this->routes as $route) {
             if (!isset($route->_middlewaresToAttach)) { continue; }
@@ -254,13 +260,17 @@ class SlimTwigWrapper
      */
     public function route($methods, $path, $callback)
     {
-        if ($this->noMoreRoutes) { return false; }
-        if (!is_string($path)) { return false; }
+        if ($this->noMoreRoutes) { return $this; }
+        if (!is_string($path)) { return $this; }
         if (substr($path, 0, 1) !== '/') { $path = '/' . $path; }
 
         if ($this->realURIDirectory !== '/') {
             $path = $this->realURIDirectory . $path;
         }
+
+        // Trim out the trailing slash '/', otherwise the URI needs to also have the slash for the route to be found.
+        // But routes that are just '/' itself, should not be trimmed.
+        if ($path !== '/') { $path = rtrim($path, '/'); }
 
         $methods = explode(',', $methods);
         foreach ($methods as $i => $m) {

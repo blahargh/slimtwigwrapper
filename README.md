@@ -14,7 +14,10 @@ $app->run();
 ```
 
 ### Routes in _routes.php_:
-Root routes file: `/var/www/html/routes.php` or in the index file, `/var/www/html/index.php`
+***It is highly recommended to use a `routes.php` file instead of merely using
+`index.php`. This will avoid routing conflicts and keep relevant routes
+together, which will help ease maintenance.***
+Root routes file: `/var/www/html/routes.php` (recommended) or in the index file, `/var/www/html/index.php`
 ``` php
 <?php
 
@@ -219,40 +222,50 @@ Global middleware 22
 ```
 
 ### Subroot example:
-Root routes file: `/var/www/html/routes.php` or in `/var/www/html/index.php`  
+Root routes file: `/var/www/html/routes.php` (recommended) or in `/var/www/html/index.php`  
 Subroot routes file: `/var/www/html/accounts/routes.php`
 
-Subroots are **actual** decendant directories of the root directory, not just a URL path. In this case, `/var/www/html` is the root directory and `accounts` (`/var/www/html/accounts`) is a subroot.  
+Subroots are **actual** decendant directories of the root directory, not just a
+URL path. In this case, `/var/www/html` is the root directory and `accounts`
+(`/var/www/html/accounts`) is a subroot.  
 
-All routes in a subroot `routes.php` file will be treated as if having been prefixed with that directory path. That route file will also only be loaded if the user goes to that directory through the URL. The root route file is not loaded if the user goes to a subroot directory. Basically, subroots can contain their own routes and view files within themselves, and the whole site can be compartmentalized by subroots. Models may also be secluded, but since they typically need to be available throughout the site, it's most likely best to have them relative to the root directory, such as `/var/www/html/models`.  
+All routes in a subroot `routes.php` file will be treated as if having been
+prefixed with that directory path. That route file will also only be loaded if
+the user goes to that directory through the URL. The root route file is not
+loaded if the user goes to a subroot directory. Basically, subroots can contain
+their own routes and view files within themselves, and the whole site can be
+compartmentalized by subroots. Models may also be secluded, but since they
+typically need to be available throughout the site, it's most likely best to
+have them relative to the root directory, such as `/var/www/html/models`.  
 
-The subroot directory and the `views` directory within it are passed to the Twig Loader as valid locations for template files. It will first search in the subroot's `views` directory, then the subroot's main directory, then the root's `views` directory, then finally the main root directory.  
-
-If a view file in root, or another subroot, needs to be accessed, prepend a '/' to the path. It will then be treated as relative to the root directory.
+The subroot directory and the `views` directory within it are passed to the
+Twig Loader as valid locations for template files. It will first search in the
+root's main directory, then the subroot's directory, then the subroot's `views`
+directory, then the root's `views` directory. The root's main directory is
+first to allow explicit requests to templates in the root directory from
+a subroot's route.
 
 ``` php
 <?php
 // In /var/www/html/accounts/routes.php:
+// Template files that exists:
+//   /var/www/html/views/home.html
+//   /var/www/html/accounts/views/home.html
 
-// URL: http://mydomain.com/accounts
+// URL: http://mydomain.com/accounts (A subroot route!)
 $app->route('get', '', function () {
-  // In subroots, template path prefixed with a '/' assumes that it is relative to the root directory.
-  // Without the '/', it is treated as relative to the subroot directory.
-  $this->render('home.html'); //<-- (Subroot view call) Looks for '/var/www/html/accounts/views/home.html', then '/var/www/html/accounts/home.html', then 'var/www/html/views/home.html', then finally 'var/www/html/home.html'.
+  // In this example, Twig will search for the template in the following directories, in the following order:
+  // 1. /var/www/html
+  // 2. /var/www/html/accounts
+  // 3. /var/www/html/accounts/views
+  // 4. /var/ww/html/views
+  $this->render('home.html'); //<-- Uses '/var/www/html/accounts/views/home.html'.
   - OR IF -
-  $this->render('/home.html'); //<-- (Root view call) Looks for '/var/www/html/views/home.html', then '/var/www/html/home.html'.
+  $this->render('/home.html'); //<-- Uses '/var/www/html/accounts/views/home.html'.
   - OR IF -
-  $this->render('/accounts/home.html'); //<-- (Root view call) Looks for '/var/www/html/views/accounts/home.html', then '/var/www/html/accounts/home.html'.
+  $this->render('/accounts/views/home.html'); //<-- Uses '/var/www/html/accounts/views/home.html'.
   - OR IF -
-  $this->render('accounts/home.html'); //<-- (Subroot view call) Looks for '/var/www/html/accounts/views/accounts/home.html', then '/var/www/html/accounts/accounts/home.html' (which is probably not what you want!), then '/var/www/html/views/accounts/home.html', then finally '/var/www/html/accounts/home.html'.
-});
-
-// URL: http://mydomain.com/accounts/edit
-$app->route('get, post', 'edit', function () {
-  $accounts = \Models\SomeObject::getAccounts();
-  $this->render('edit.html', [
-    'accounts' => $accounts,
-  ]);
+  $this->render('/views/home.html'); //<-- Uses '/var/www/html/views/home.html'.
 });
 ```
 
@@ -323,7 +336,7 @@ $app->route('get', '/tools/user-info/edit/{id}', function ($args) {  <B
 });                                                                  <B
 ```
 
-#### Organized by Modules (Subroots)
+#### Organized by Modules (Subroots) - Modular MVC Structure
 
 ``` php
 File structure:

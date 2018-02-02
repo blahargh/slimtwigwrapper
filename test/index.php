@@ -24,44 +24,14 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline, $errcontext) {
 });
 
 
-$app = new \IMP\SlimTwigWrapper();
+$app = new \IMP\SlimTwigWrapper('stwTest');
 
-$app->addMiddleware(function($next) {
-    $this->write('Global middleware 1<br />');
-    $next();
-    $this->write('Global middleware 11<br />');
-})->addMiddleware(function($next) {
-    $this->write('Global middleware 2<br />');
-    $next();
-    $this->write('Global middleware 22<br />');
-});
-
-$app->route('get', '/', function() {
-	$this->render('home.html', [
-		'title' => 'Home',
-	]);
-});
-
-$app->addGroupMiddleware('test', function($next) {
-    $this->write('Group middleware 1<br />');
-    $next();
-    $this->write('Group middleware 11<br />');
-})->addGroupMiddleware('test', function($next) {
-    $this->write('Group middleware 2<br />');
-    $next();
-    $this->write('Group middleware 22<br />');
-});
-
-$app->route('get', 'test', function() {
-    $this->write('TEST!!!<br />');
-})->addRouteMiddleware(function($next) {
-    $this->write('Route middleware 1<br />');
-    $next();
-    $this->write('Route middleware 11<br />');
-})->addRouteMiddleware(function($next) {
-    $this->write('Route middleware 2<br />');
-    $next();
-    $this->write('Route middleware 22<br />');
+// Dev ONLY!
+$app->addDependency('notFoundHandler', function ($c) use ($app) {
+    return function ($request, $response) use ($c, $app) {
+        $response->write('<h1>Route not found:</h1> <pre>' . print_r($app->getVars(), true) . '</pre>');
+        return $response;
+    };
 });
 
 $app->run();
