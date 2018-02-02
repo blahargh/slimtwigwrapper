@@ -284,7 +284,7 @@ class SlimTwigWrapper
             $wrapper->request = $request;
             $wrapper->response = $response;
             $routeCallback($args);
-            return $response;
+            return $wrapper->response;
         };
 
         $route = $this->slim->map($methods, $path, $responseCall);
@@ -337,9 +337,9 @@ class SlimTwigWrapper
         // If not leading with a slash ('/'), redirect based off of the
         // basePath. Otherwise, redirect as is.
         if (substr($uri, 0, 1) === '/') {
-            $this->response->withRedirect($uri);
+            $this->response = $this->response->withRedirect($uri);
         } else {
-            $this->response->withRedirect($this->basePath . '/' . $uri);
+            $this->response = $this->response->withRedirect($this->server['BASE_PATH'] . '/' . $uri);
         }
     }
 
