@@ -334,7 +334,13 @@ class SlimTwigWrapper
      */
     public function redirectTo($uri)
     {
-        $this->response->withRedirect($this->basePath . '/instructions');
+        // If not leading with a slash ('/'), redirect based off of the
+        // basePath. Otherwise, redirect as is.
+        if (substr($uri, 0, 1) === '/') {
+            $this->response->withRedirect($uri);
+        } else {
+            $this->response->withRedirect($this->basePath . '/' . $uri);
+        }
     }
 
     /**
