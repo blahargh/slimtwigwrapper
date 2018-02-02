@@ -231,18 +231,18 @@ URL path. In this case, `/var/www/html` is the root directory and `accounts`
 
 All routes in a subroot `routes.php` file will be treated as if having been
 prefixed with that directory path. That route file will also only be loaded if
-the user goes to that directory through the URL. The root route file is not
-loaded if the user goes to a subroot directory. Basically, subroots can contain
+the user goes to that directory through the URL. ***The root route file is not
+loaded if the user goes to a subroot directory.*** Basically, subroots can have
 their own routes and view files within themselves, and the whole site can be
 compartmentalized by subroots. Models may also be secluded, but since they
 typically need to be available throughout the site, it's most likely best to
-have them relative to the root directory, such as `/var/www/html/models`.  
+have them relative to the root directory, such as in `/var/www/html/models`.
 
 The subroot directory and the `views` directory within it are passed to the
 Twig Loader as valid locations for template files. It will first search in the
 root's main directory, then the subroot's directory, then the subroot's `views`
 directory, then the root's `views` directory. The root's main directory is
-first to allow explicit requests to templates in the root directory from
+first, to allow explicit requests to templates in the root directory from
 a subroot's route.
 
 ``` php
