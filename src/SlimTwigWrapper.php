@@ -25,11 +25,18 @@ class SlimTwigWrapper
     public $realURIDirectory;
 
 
-    public function __construct($documentRootAppend = null, \Slim\App $slim = null, $subrootBase = null)
+    /**
+     * $options = [
+     *    'documentRootAppend' => 'mysite'       - This will allow having multiple independent sites that sit under one domain server, by specifying a directory in the DOCUMENT_ROOT that will be appended as the new DOCUMENT_ROOT.
+     *    'slimObject'         => $slimObject    - If the Slim object (\Slim\App) was already created, it can be used by this wrapper.
+     *    'subrootBase'        => 'mysubroots'   - This is used to specify a directory, relative to the root directory, as the location of all subroots.
+     * ]
+     */
+    public function __construct($options);
     {
         $this->server = $this->encode($_SERVER);
         $this->server['ROOT_APPEND'] = '';
-        if ($documentRootAppend) {
+        if (!empty($options['documentRootAppend'])) {
             // Allow specifying a directory in the DOCUMENT_ROOT to make into the new DOCUMENT_ROOT. This will allow
             // having multiple independent sites that sit under one domain server.
             // For example:
@@ -37,7 +44,7 @@ class SlimTwigWrapper
             //   $documentRoot = 'mysite'
             //   In this scenario, "mysite" will be the subdirectory to attach, so $this->server['DOCUMENT_ROOT'] will
             //   be set to "/var/www/html/mysite", and other server values will be adjusted accordingly.
-            $documentRootAppend = str_replace('\\', '/', trim($documentRootAppend));
+            $documentRootAppend = str_replace('\\', '/', trim($options['documentRootAppend']));
             if (substr($documentRootAppend, 0, 1) !== '/') { $documentRootAppend = '/' . $documentRootAppend; }
             $this->server['ROOT_APPEND'] = $documentRootAppend;
             $this->server['DOCUMENT_ROOT'] = realpath($this->server['DOCUMENT_ROOT'] . $documentRootAppend);
@@ -45,7 +52,11 @@ class SlimTwigWrapper
             if (substr($this->server['REQUEST_URI'], 0, $length) === $documentRootAppend) { $this->server['REQUEST_URI'] = substr($this->server['REQUEST_URI'], $length); }
             if (substr($this->server['SCRIPT_NAME'], 0, $length) === $documentRootAppend) { $this->server['SCRIPT_NAME'] = substr($this->server['SCRIPT_NAME'], $length); }
         }
-        $this->subrootBase = $subrootBase;
+        if (!empty($options['subrootBase'])) {
+            $this->subrootBase = $options['subrootBase'];
+            $this->subrootBase = str_replace('\\', '/', trim($this->subrootBase));
+            if (substr($this->subrootBase, 0, 1) !== '/') { $this->subrootBase = '/' . $this->subrootBase; }
+        }
 
         $this->server['DOMAIN_URI'] = 'http' . (!empty($this->server['HTTPS']) && $this->server['HTTPS'] === 'on' ? 's' : '') . '://' . $this->server['HTTP_HOST'];
         $this->server['BASE_PATH'] = $this->server['ROOT_APPEND'];
@@ -56,12 +67,12 @@ class SlimTwigWrapper
 
         $this->realURIDirectory = $this->getRealDirectory(); //<-- "/" or "/some/path"
 
-        if ($slim === null) {
+        if (!empty($options['slimObject'] && is_a($options['slimObject'], '\Slim\App')) {
+            $this->slim = $options['slimObject'];
+            $this->container = $this->slim->getContainer();
+        } else {
             $this->container = new \Slim\Container();
             $this->slim = new \Slim\App($this->container);
-        } else {
-            $this->slim = $slim;
-            $this->container = $slim->getContainer();
         }
 
         // Make sure the "views" directory exists before loading Twig.
