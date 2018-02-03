@@ -32,7 +32,7 @@ class SlimTwigWrapper
      *    'subrootBase'        => 'mysubroots'   - This is used to specify a directory, relative to the root directory, as the location of all subroots.
      * ]
      */
-    public function __construct($options);
+    public function __construct($options)
     {
         $this->server = $this->encode($_SERVER);
         $this->server['ROOT_APPEND'] = '';
