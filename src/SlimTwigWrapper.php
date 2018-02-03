@@ -67,7 +67,7 @@ class SlimTwigWrapper
 
         $this->realURIDirectory = $this->getRealDirectory(); //<-- "/" or "/some/path"
 
-        if (!empty($options['slimObject'] && is_a($options['slimObject'], '\Slim\App')) {
+        if (!empty($options['slimObject']) && is_a($options['slimObject'], '\Slim\App')) {
             $this->slim = $options['slimObject'];
             $this->container = $this->slim->getContainer();
         } else {
