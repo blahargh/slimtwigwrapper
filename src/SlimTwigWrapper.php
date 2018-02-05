@@ -32,7 +32,7 @@ class SlimTwigWrapper
      *    'subrootBase'        => 'mysubroots'   - This is used to specify a directory, relative to the root directory, as the location of all subroots.
      * ]
      */
-    public function __construct($options = array())
+    public function __construct($options)
     {
         $this->server = $this->encode($_SERVER);
         $this->server['ROOT_APPEND'] = '';
@@ -83,6 +83,10 @@ class SlimTwigWrapper
         // Start with the root directory, a template from the root directory can be specified even when calling from
         // a route in a subroot directory.
         $templatePaths = array('');
+        // Include the specified subroot base path.
+        if ($this->subrootBase) {
+            $templatePaths[] = ltrim($this->subrootBase, '/');
+        }
         // Prepend template subpath.
         if ($this->realURIDirectory !== '' && $this->realURIDirectory !== '/') {
             $path = ltrim($this->realURIDirectory, '/');
