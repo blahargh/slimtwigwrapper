@@ -366,6 +366,15 @@ class SlimTwigWrapper
         if (empty($this->request)) { return null; }
         return $this->request->getParam($name);
     }
+    
+    /**
+     * Get all input parameters.
+     */
+    public function getParams()
+    {
+        if (empty($this->request)) { return array(); }
+        return $this->request->getParams();
+    }
 
     /**
     * Shortcut to write out to the Response object if it exists, to the output buffer otherwise.
