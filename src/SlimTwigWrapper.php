@@ -273,11 +273,15 @@ class SlimTwigWrapper
     {
         if ($this->noMoreRoutes) { return $this; }
         if (!is_string($path)) { return $this; }
-        if (substr($path, 0, 1) !== '/') { $path = '/' . $path; }
-
-        if ($this->realURIDirectory !== '/') {
+        
+        // Declare the route as coming from the subroot if the path does not have a leading slash ('/') and
+        // realURIDirectory is specified.
+        if (substr($path, 0, 1) !== '/' && $this->realURIDirectory !== '/') {
             $path = $this->realURIDirectory . $path;
         }
+
+        // Make sure the path to make into a route has a leading slash ('/') before it is passed in to Slim.
+        if (substr($path, 0, 1) !== '/') { $path = '/' . $path; }
 
         // Trim out the trailing slash '/', otherwise the URI needs to also have the slash for the route to be found.
         // But routes that are just '/' itself, should not be trimmed.
