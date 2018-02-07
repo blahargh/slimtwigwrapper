@@ -357,6 +357,14 @@ class SlimTwigWrapper
             $this->response = $this->response->withRedirect($this->server['BASE_PATH'] . '/' . $uri);
         }
     }
+    
+    /**
+     * Modify the response object to return JSON.
+     */
+    public function withJson($data, $status = 200, $encodingOptions = 0)
+    {
+        $this->response = $this->response->withJson($data, $status, $encodingOptions);
+    }
 
     /**
      * Get an input parameter first from PUT, then POST, then GET, and if not found, NULL is returned.
