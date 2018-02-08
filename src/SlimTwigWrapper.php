@@ -349,12 +349,20 @@ class SlimTwigWrapper
      */
     public function redirectTo($uri)
     {
-        // If not leading with a slash ('/'), redirect based off of the
-        // basePath. Otherwise, redirect as is.
-        if (substr($uri, 0, 1) === '/' || substr($uri, 0, 7) === 'http://' || substr($uri, 0, 8) === 'https://') {
+        // If leading with "http://" or "https://", then redirect as is.
+        if (substr($uri, 0, 7) === 'http://' || substr($uri, 0, 8) === 'https://') {
             $this->response = $this->response->withRedirect($uri);
         } else {
-            $this->response = $this->response->withRedirect($this->server['BASE_PATH'] . '/' . $uri);
+            // If not leading with a slash ('/'), redirect based off of the
+            // realURIDirectory, so it behaves similar to routes.
+            if (substr($uri, 0, 1) !== '/' && $this->realURIDirectory !== '/') {
+                $uri = $this->realURIDirectory . $uri;
+            }
+            // Make sure the URI has a leading slash ('/') before it's appended
+            // to the BASE_PATH (since the code above will have a leading slash.
+            if (substr($uri, 0, 1) !== '/') { $uri = '/' . $uri; }
+            $this->response = $this->response->withRedirect($this->server['BASE_PATH'] . $uri);
+            
         }
     }
     
