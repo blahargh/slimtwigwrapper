@@ -274,16 +274,18 @@ class SlimTwigWrapper
         if ($this->noMoreRoutes) { return $this; }
         if (!is_string($path)) { return $this; }
         
-        // Declare the route as coming from the subroot if the path does not have a leading slash ('/') and
-        // realURIDirectory is specified.
+        // Declare the route as coming from the subroot if the path does not
+        // have a leading slash ('/') and realURIDirectory is specified.
         if (substr($path, 0, 1) !== '/' && $this->realURIDirectory !== '/') {
-            $path = $this->realURIDirectory . $path;
+            $path = $this->realURIDirectory . '/' . $path;
         }
 
-        // Make sure the path to make into a route has a leading slash ('/') before it is passed in to Slim.
+        // Make sure the path to make into a route has a leading slash ('/')
+        // before it is passed in to Slim.
         if (substr($path, 0, 1) !== '/') { $path = '/' . $path; }
 
-        // Trim out the trailing slash '/', otherwise the URI needs to also have the slash for the route to be found.
+        // Trim out the trailing slash '/', otherwise the URI needs to also
+        // have the slash for the route to be found.
         // But routes that are just '/' itself, should not be trimmed.
         if ($path !== '/') { $path = rtrim($path, '/'); }
 
@@ -356,7 +358,7 @@ class SlimTwigWrapper
             // If not leading with a slash ('/'), redirect based off of the
             // realURIDirectory, so it behaves similar to routes.
             if (substr($uri, 0, 1) !== '/' && $this->realURIDirectory !== '/') {
-                $uri = $this->realURIDirectory . $uri;
+                $uri = $this->realURIDirectory . '/' . $uri;
             }
             // Make sure the URI has a leading slash ('/') before it's appended
             // to the BASE_PATH (since the code above will have a leading slash.
