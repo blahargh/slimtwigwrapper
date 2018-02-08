@@ -333,12 +333,28 @@ class SlimTwigWrapper
     }
 
     /**
-     * Get the rendered HTML from a twig template or an HTML string.
+     * Get the rendered HTML from a twig template. The actual template file NEEDS to have a ".html" extension.
+     * The $toRender parameter does not have to have the ".html" extension. It will be appended if missing.
+     * Leading underscore ('_') for template files will be recognized. This can help group template files together if
+     * they are in the same directory as the routes.php file.
      */
     public function getRender($toRender, $params = array())
     {
-        if (strpos($toRender, ' ') === false && substr($toRender, -5) === '.html') {
-            return $this->twig->render($toRender, $params);
+        if (strpos($toRender, ' ') === false) {
+            // Append ".html" if the template passed in does not have it.
+            if (substr($toRender, -5) !== '.html') { $toRender .= '.html'; }
+            // Check for the template as is.
+            if ($this->twig->getLoader()->exists($toRender)) {
+                return $this->twig->render($toRender, $params);
+            }
+            // Check if the underscored version exists.
+            $_toRender = rtrim(dirname($toRender), '/') . '/_' . basename($toRender);
+            if ($this->twig->getLoader()->exists($_toRender)) {
+                return $this->twig->render($_toRender, $params);
+            }
+            // Throw an exception at this point since the template file was not found in any of the specified
+            // Twig paths.
+            throw new \Exception("Missing template file: {$toRender}");
         } else {
             /** Force using templates for security? **/
             /** return $toRender; **/
