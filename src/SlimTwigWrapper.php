@@ -351,7 +351,7 @@ class SlimTwigWrapper
     {
         // If not leading with a slash ('/'), redirect based off of the
         // basePath. Otherwise, redirect as is.
-        if (substr($uri, 0, 1) === '/') {
+        if (substr($uri, 0, 1) === '/' || substr($uri, 0, 7) === 'http://' || substr($uri, 0, 8) === 'https://') {
             $this->response = $this->response->withRedirect($uri);
         } else {
             $this->response = $this->response->withRedirect($this->server['BASE_PATH'] . '/' . $uri);
