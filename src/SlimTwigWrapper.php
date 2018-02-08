@@ -10,9 +10,10 @@ class SlimTwigWrapper
     private $app;
     private $noMoreRoutes = false;       // Flag to determine if subsequent routes should even be loaded.
     private $groupMiddlewares = array(); // Storage for defined group middlewares.
-    private $routes = array();           // Store the routes so they can be manipulated prior to calling \Slim\App::run();
+    private $routes = array();           // Store the routes so they can be manipulated prior to calling \Slim\App::run().
     private $lastDefinedRoute = null;    // Store the last defined route, so subsequent calls to addRouteMiddleware know to which route to attach the middleware.
-    private $subrootBase = null;
+    private $subrootBase = null;         // Store the subroot base, if specified in the constructor.
+    private $noMoreRenders = false;      // Flag to disable rendering more templates. This is mainly set after calling redirectTo().
 
     public $twig;
     public $request;       // Changes per route/middleware.
@@ -329,7 +330,10 @@ class SlimTwigWrapper
      */
     public function render($toRender, $params = array())
     {
-        $this->response->write($this->getRender($toRender, $params));
+        if (!$this->noMoreRenders) {
+            $this->response->write($this->getRender($toRender, $params));
+        }
+        return $this;
     }
 
     /**
@@ -380,8 +384,8 @@ class SlimTwigWrapper
             // to the BASE_PATH (since the code above will have a leading slash.
             if (substr($uri, 0, 1) !== '/') { $uri = '/' . $uri; }
             $this->response = $this->response->withRedirect($this->server['BASE_PATH'] . $uri);
-            
         }
+        $this->noMoreRenders = true;
     }
     
     /**
