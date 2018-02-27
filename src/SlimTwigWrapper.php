@@ -112,12 +112,6 @@ class SlimTwigWrapper
 
         // Store the twig object as a property for easy referencing, if need be.
         $this->twig = $this->slim->getContainer()->get('twig');
-
-        $this->addGlobal('host', $this->server['HTTP_HOST']);
-        $this->addGlobal('domainURI', $this->server['DOMAIN_URI']);
-        $this->addGlobal('requestURI', $this->server['REQUEST_URI']);
-        $this->addGlobal('basePath', $this->server['BASE_PATH']);
-        $this->addGlobal('realURIDirectory', $this->realURIDirectory);
     }
 
     /**
@@ -274,7 +268,7 @@ class SlimTwigWrapper
     {
         if ($this->noMoreRoutes) { return $this; }
         if (!is_string($path)) { return $this; }
-        
+
         // Declare the route as coming from the subroot if the path does not
         // have a leading slash ('/') and realURIDirectory is specified.
         if (substr($path, 0, 1) !== '/' && $this->realURIDirectory !== '/') {
@@ -387,7 +381,7 @@ class SlimTwigWrapper
         }
         $this->noMoreRenders = true;
     }
-    
+
     /**
      * Modify the response object to return JSON.
      */
@@ -404,7 +398,7 @@ class SlimTwigWrapper
         if (empty($this->request)) { return null; }
         return $this->request->getParam($name);
     }
-    
+
     /**
      * Get all input parameters.
      */
