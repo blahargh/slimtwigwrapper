@@ -409,6 +409,32 @@ class SlimTwigWrapper
     }
 
     /**
+     * Get the uploaded files. This is a shortcut for $this->request->getUploadedFiles(), which returns and array with
+     * the key being the field name and the value being a Slim\Http\UploadedFile object.
+     *
+     * Example:
+     *    Array
+     *    (
+     *        [Filedata] => Slim\Http\UploadedFile Object
+     *            (
+     *                [file] => C:\Users\santos.134\AppData\Local\Temp\1\phpF836.tmp
+     *                [name:protected] => test_upload_g.txt
+     *                [type:protected] => text/plain
+     *                [size:protected] => 1540
+     *                [error:protected] => 0
+     *                [sapi:protected] => 1
+     *                [stream:protected] =>
+     *                [moved:protected] =>
+     *            )
+     *    )
+     */
+    public function getUploadedFiles()
+    {
+        if (empty($this->request)) { return array(); }
+        return $this->request->getUploadedFiles();
+    }
+
+    /**
     * Shortcut to write out to the Response object if it exists, to the output buffer otherwise.
     */
     public function write($str)
