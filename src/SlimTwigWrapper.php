@@ -164,15 +164,12 @@ class SlimTwigWrapper
 
 
     /**
-     * Get/Set attributes.
+     * Add an attribute that can then be retrieved in another callback.
+     * For example, passing a paramenter from a middleware to a route.
      */
-    public function attribute($name, $value = null)
+    public function addAttribute($name, $value)
     {
-        if ($value === null) {
-            return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
-        } else {
-            $this->attributes[$name] = $value;
-        }
+        $this->attributes[$name] = $value;
     }
 
     /**
@@ -240,6 +237,15 @@ class SlimTwigWrapper
         } else {
             return htmlentities($strOrArray, ENT_QUOTES | ENT_SUBSTITUTE);
         }
+    }
+
+    /**
+     * Get an attribute that may have been set from another callback.
+     * For example, passing a paramenter from a middleware to a route.
+     */
+    public function getAttribute($name)
+    {
+        return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
     }
 
     /**
