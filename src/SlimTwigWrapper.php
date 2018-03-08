@@ -14,7 +14,7 @@ class SlimTwigWrapper
     private $lastDefinedRoute = null;    // Store the last defined route, so subsequent calls to addRouteMiddleware know to which route to attach the middleware.
     private $subrootBase = null;         // Store the subroot base, if specified in the constructor.
     private $noMoreRenders = false;      // Flag to disable rendering more templates. This is mainly set after calling redirectTo().
-
+    private $attributes = array();       // Safe storage for variables that will need to be passed around between different callbacks; for example, middleware to route.
     public $twig;
     public $request;       // Changes per route/middleware.
     public $response;      // Changes per route/middleware.
@@ -164,19 +164,14 @@ class SlimTwigWrapper
 
 
     /**
-     * This is used to encode a string so that it is safe for print out.
-     * This can be overwritten if a different encoding process is desired.
+     * Get/Set attributes.
      */
-    public function encode($strOrArray)
+    public function attribute($name, $value = null)
     {
-        if (is_array($strOrArray)) {
-            $output = array();
-            foreach ($strOrArray as $name => $value) {
-                $output[htmlentities($name, ENT_QUOTES | ENT_SUBSTITUTE)] = htmlentities($value, ENT_QUOTES | ENT_SUBSTITUTE);
-            }
-            return $output;
+        if ($value === null) {
+            return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
         } else {
-            return htmlentities($strOrArray, ENT_QUOTES | ENT_SUBSTITUTE);
+            $this->attributes[$name] = $value;
         }
     }
 
@@ -202,21 +197,21 @@ class SlimTwigWrapper
     }
 
     /**
-     * Add a middleware.
-     */
-    public function addMiddleware($callback)
-    {
-        $this->slim->add($this->makeMiddlewareCallback($callback));
-        return $this;
-    }
-
-    /**
     * Define a middleware to use for a group.
     */
     public function addGroupMiddleware($path, $callback)
     {
         if (!isset($this->groupMiddlewares[$path])) { $this->groupMiddlewares[$path] = array(); }
         $this->groupMiddlewares[$path][] = $this->makeMiddlewareCallback($callback);
+        return $this;
+    }
+
+    /**
+     * Add a middleware.
+     */
+    public function addMiddleware($callback)
+    {
+        $this->slim->add($this->makeMiddlewareCallback($callback));
         return $this;
     }
 
@@ -231,34 +226,137 @@ class SlimTwigWrapper
     }
 
     /**
-     * Run the slim process.
+     * This is used to encode a string so that it is safe for print out.
+     * This can be overwritten if a different encoding process is desired.
      */
-    public function run()
+    public function encode($strOrArray)
     {
-        // Add routes if defined in a "routes.php" file in a real directory that is a part of the URL.
-        $routesFile = 'routes.php';
-        if ($this->realURIDirectory && file_exists("{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}$this->realURIDirectory/$routesFile")) {
-            $app = $this;
-            include "{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}$this->realURIDirectory/$routesFile";
-            // Set flag to not load further routes so root routes does not conflict with subroot routes that were just loaded.
-            $this->noMoreRoutes = true;
-        }
-
-        // Add routes if defined in a "routes.php" file in the base directory.
-        if (!$this->noMoreRoutes && file_exists("{$this->server['DOCUMENT_ROOT']}/routes.php")) {
-            $app = $this;
-            include "{$this->server['DOCUMENT_ROOT']}/routes.php";
-        }
-
-        // Attach group middlewares to the proper routes at this point.
-        foreach ($this->routes as $route) {
-            if (!isset($route->_middlewaresToAttach)) { continue; }
-            foreach ($route->_middlewaresToAttach as $middlewareCallback) {
-                $route->add($middlewareCallback);
+        if (is_array($strOrArray)) {
+            $output = array();
+            foreach ($strOrArray as $name => $value) {
+                $output[htmlentities($name, ENT_QUOTES | ENT_SUBSTITUTE)] = htmlentities($value, ENT_QUOTES | ENT_SUBSTITUTE);
             }
+            return $output;
+        } else {
+            return htmlentities($strOrArray, ENT_QUOTES | ENT_SUBSTITUTE);
         }
-        // Run Slim.
-        $this->slim->run();
+    }
+
+    /**
+     * Get an input parameter first from PUT, then POST, then GET, and if not found, NULL is returned.
+     */
+    public function getParam($name)
+    {
+        if (empty($this->request)) { return null; }
+        return $this->request->getParam($name);
+    }
+
+    /**
+     * Get all input parameters.
+     */
+    public function getParams()
+    {
+        if (empty($this->request)) { return array(); }
+        return $this->request->getParams();
+    }
+
+    /**
+     * Get the rendered HTML from a twig template. The actual template file NEEDS to have a ".html" extension.
+     * The $toRender parameter does not have to have the ".html" extension. It will be appended if missing.
+     * Leading underscore ('_') for template files will be recognized. This can help group template files together if
+     * they are in the same directory as the routes.php file.
+     */
+    public function getRender($toRender, $params = array())
+    {
+        if (strpos($toRender, ' ') === false) {
+            // Append ".html" if the template passed in does not have it.
+            if (substr($toRender, -5) !== '.html') { $toRender .= '.html'; }
+            // Check for the template as is.
+            if ($this->twig->getLoader()->exists($toRender)) {
+                return $this->twig->render($toRender, $params);
+            }
+            // Check if the underscored version exists.
+            $_toRender = rtrim(dirname($toRender), '/') . '/_' . basename($toRender);
+            if ($this->twig->getLoader()->exists($_toRender)) {
+                return $this->twig->render($_toRender, $params);
+            }
+            // Throw an exception at this point since the template file was not found in any of the specified
+            // Twig paths.
+            throw new \Exception("Missing template file: {$toRender}");
+        } else {
+            /** Force using templates for security? **/
+            /** return $toRender; **/
+            throw new \Exception('Use a view file template (.html) for rendering HTML.');
+        }
+    }
+
+    /**
+     * Get the uploaded files. This is a shortcut for $this->request->getUploadedFiles(), which returns and array with
+     * the key being the field name and the value being a Slim\Http\UploadedFile object.
+     *
+     * Example:
+     *    Array
+     *    (
+     *        [Filedata] => Slim\Http\UploadedFile Object
+     *            (
+     *                [file] => C:\Users\santos.134\AppData\Local\Temp\1\phpF836.tmp
+     *                [name:protected] => test_upload_g.txt
+     *                [type:protected] => text/plain
+     *                [size:protected] => 1540
+     *                [error:protected] => 0
+     *                [sapi:protected] => 1
+     *                [stream:protected] =>
+     *                [moved:protected] =>
+     *            )
+     *    )
+     */
+    public function getUploadedFiles()
+    {
+        if (empty($this->request)) { return array(); }
+        return $this->request->getUploadedFiles();
+    }
+
+    /**
+     * Get environment variables.
+     */
+    public function getVars()
+    {
+        return array(
+            'realURIDirectory' => $this->realURIDirectory,
+        ) + $this->server;
+    }
+
+    /**
+     * Specify a redirection.
+     */
+    public function redirectTo($uri)
+    {
+        // If leading with "http://" or "https://", then redirect as is.
+        if (substr($uri, 0, 7) === 'http://' || substr($uri, 0, 8) === 'https://') {
+            $this->response = $this->response->withRedirect($uri);
+        } else {
+            // If not leading with a slash ('/'), redirect based off of the
+            // realURIDirectory, so it behaves similar to routes.
+            if (substr($uri, 0, 1) !== '/' && $this->realURIDirectory !== '/') {
+                $uri = $this->realURIDirectory . '/' . $uri;
+            }
+            // Make sure the URI has a leading slash ('/') before it's appended
+            // to the BASE_PATH (since the code above will have a leading slash.
+            if (substr($uri, 0, 1) !== '/') { $uri = '/' . $uri; }
+            $this->response = $this->response->withRedirect($this->server['BASE_PATH'] . $uri);
+        }
+        $this->noMoreRenders = true;
+    }
+
+    /**
+     * Render a twig template or an HTML string.
+     */
+    public function render($toRender, $params = array())
+    {
+        if (!$this->noMoreRenders) {
+            $this->response->write($this->getRender($toRender, $params));
+        }
+        return $this;
     }
 
     /**
@@ -320,130 +418,34 @@ class SlimTwigWrapper
     }
 
     /**
-     * Render a twig template or an HTML string.
+     * Run the slim process.
      */
-    public function render($toRender, $params = array())
+    public function run()
     {
-        if (!$this->noMoreRenders) {
-            $this->response->write($this->getRender($toRender, $params));
+        // Add routes if defined in a "routes.php" file in a real directory that is a part of the URL.
+        $routesFile = 'routes.php';
+        if ($this->realURIDirectory && file_exists("{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}$this->realURIDirectory/$routesFile")) {
+            $app = $this;
+            include "{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}$this->realURIDirectory/$routesFile";
+            // Set flag to not load further routes so root routes does not conflict with subroot routes that were just loaded.
+            $this->noMoreRoutes = true;
         }
-        return $this;
-    }
 
-    /**
-     * Get the rendered HTML from a twig template. The actual template file NEEDS to have a ".html" extension.
-     * The $toRender parameter does not have to have the ".html" extension. It will be appended if missing.
-     * Leading underscore ('_') for template files will be recognized. This can help group template files together if
-     * they are in the same directory as the routes.php file.
-     */
-    public function getRender($toRender, $params = array())
-    {
-        if (strpos($toRender, ' ') === false) {
-            // Append ".html" if the template passed in does not have it.
-            if (substr($toRender, -5) !== '.html') { $toRender .= '.html'; }
-            // Check for the template as is.
-            if ($this->twig->getLoader()->exists($toRender)) {
-                return $this->twig->render($toRender, $params);
+        // Add routes if defined in a "routes.php" file in the base directory.
+        if (!$this->noMoreRoutes && file_exists("{$this->server['DOCUMENT_ROOT']}/routes.php")) {
+            $app = $this;
+            include "{$this->server['DOCUMENT_ROOT']}/routes.php";
+        }
+
+        // Attach group middlewares to the proper routes at this point.
+        foreach ($this->routes as $route) {
+            if (!isset($route->_middlewaresToAttach)) { continue; }
+            foreach ($route->_middlewaresToAttach as $middlewareCallback) {
+                $route->add($middlewareCallback);
             }
-            // Check if the underscored version exists.
-            $_toRender = rtrim(dirname($toRender), '/') . '/_' . basename($toRender);
-            if ($this->twig->getLoader()->exists($_toRender)) {
-                return $this->twig->render($_toRender, $params);
-            }
-            // Throw an exception at this point since the template file was not found in any of the specified
-            // Twig paths.
-            throw new \Exception("Missing template file: {$toRender}");
-        } else {
-            /** Force using templates for security? **/
-            /** return $toRender; **/
-            throw new \Exception('Use a view file template (.html) for rendering HTML.');
         }
-    }
-
-    /**
-     * Specify a redirection.
-     */
-    public function redirectTo($uri)
-    {
-        // If leading with "http://" or "https://", then redirect as is.
-        if (substr($uri, 0, 7) === 'http://' || substr($uri, 0, 8) === 'https://') {
-            $this->response = $this->response->withRedirect($uri);
-        } else {
-            // If not leading with a slash ('/'), redirect based off of the
-            // realURIDirectory, so it behaves similar to routes.
-            if (substr($uri, 0, 1) !== '/' && $this->realURIDirectory !== '/') {
-                $uri = $this->realURIDirectory . '/' . $uri;
-            }
-            // Make sure the URI has a leading slash ('/') before it's appended
-            // to the BASE_PATH (since the code above will have a leading slash.
-            if (substr($uri, 0, 1) !== '/') { $uri = '/' . $uri; }
-            $this->response = $this->response->withRedirect($this->server['BASE_PATH'] . $uri);
-        }
-        $this->noMoreRenders = true;
-    }
-
-    /**
-     * Modify the response object to return JSON.
-     */
-    public function withJson($data, $status = 200, $encodingOptions = 0)
-    {
-        $this->response = $this->response->withJson($data, $status, $encodingOptions);
-    }
-
-    /**
-     * Get an input parameter first from PUT, then POST, then GET, and if not found, NULL is returned.
-     */
-    public function getParam($name)
-    {
-        if (empty($this->request)) { return null; }
-        return $this->request->getParam($name);
-    }
-
-    /**
-     * Get all input parameters.
-     */
-    public function getParams()
-    {
-        if (empty($this->request)) { return array(); }
-        return $this->request->getParams();
-    }
-
-    /**
-     * Get the uploaded files. This is a shortcut for $this->request->getUploadedFiles(), which returns and array with
-     * the key being the field name and the value being a Slim\Http\UploadedFile object.
-     *
-     * Example:
-     *    Array
-     *    (
-     *        [Filedata] => Slim\Http\UploadedFile Object
-     *            (
-     *                [file] => C:\Users\santos.134\AppData\Local\Temp\1\phpF836.tmp
-     *                [name:protected] => test_upload_g.txt
-     *                [type:protected] => text/plain
-     *                [size:protected] => 1540
-     *                [error:protected] => 0
-     *                [sapi:protected] => 1
-     *                [stream:protected] =>
-     *                [moved:protected] =>
-     *            )
-     *    )
-     */
-    public function getUploadedFiles()
-    {
-        if (empty($this->request)) { return array(); }
-        return $this->request->getUploadedFiles();
-    }
-
-    /**
-    * Shortcut to write out to the Response object if it exists, to the output buffer otherwise.
-    */
-    public function write($str)
-    {
-        if (!empty($this->response) && method_exists($this->response, 'write')) {
-            $this->response->write($str);
-        } else {
-            print $str;
-        }
+        // Run Slim.
+        $this->slim->run();
     }
 
     /**
@@ -460,14 +462,23 @@ class SlimTwigWrapper
         }
     }
 
+    /**
+     * Modify the response object to return JSON.
+     */
+    public function withJson($data, $status = 200, $encodingOptions = 0)
+    {
+        $this->response = $this->response->withJson($data, $status, $encodingOptions);
+    }
 
     /**
-     * Get environment variables.
-     */
-    public function getVars()
+    * Shortcut to write out to the Response object if it exists, to the output buffer otherwise.
+    */
+    public function write($str)
     {
-        return array(
-            'realURIDirectory' => $this->realURIDirectory,
-        ) + $this->server;
+        if (!empty($this->response) && method_exists($this->response, 'write')) {
+            $this->response->write($str);
+        } else {
+            print $str;
+        }
     }
 }
