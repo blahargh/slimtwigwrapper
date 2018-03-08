@@ -432,12 +432,16 @@ class SlimTwigWrapper
         $routesFile = 'routes.php';
         if ($this->realURIDirectory && file_exists("{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}$this->realURIDirectory/$routesFile")) {
             $app = $this;
-            include "{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}$this->realURIDirectory/$routesFile";
             // Load routes in all ancestors under the current subroot, not the root one though.
-            $dir = dirname("{$this->subrootBase}$this->realURIDirectory");
-            if ($dir !== $this->subrootBase && file_exists("{$this->server['DOCUMENT_ROOT']}$dir/$routesFile")) {
-                include "{$this->server['DOCUMENT_ROOT']}$dir/$routesFile";
+            $parts = explode('/', trim($this->realURIDirectory, '/'));
+            $dir = "{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}";
+            foreach ($parts as $part) {
+                if (file_exists("$dir/$part/$routesFile")) {
+                    include "$dir/$part/$routesFile";
+                }
+                $dir .= "/$part";
             }
+            // This one is a single route load. No ancestors.//include "{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}$this->realURIDirectory/$routesFile";
             // Set flag to not load further routes so root routes does not conflict with subroot routes that were just loaded.
             $this->noMoreRoutes = true;
         }
