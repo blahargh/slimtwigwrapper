@@ -410,9 +410,9 @@ class SlimTwigWrapper
         // Group middleware of an ancestor path will need to be loaded
         // first (which is reverse of just adding them as they are declared),
         // but those within the same path will be loaded similar to Slim.
-        $this->groupMiddlewares = array_reverse($this->groupMiddlewares);
+        $groupMiddlewares = array_reverse($this->groupMiddlewares);
         $route->_middlewaresToAttach = array();
-        foreach ($this->groupMiddlewares as $path => $middlewareCallbacks) {
+        foreach ($groupMiddlewares as $path => $middlewareCallbacks) {
             if (substr($path, 0, strlen($path)) === $path) {
                 foreach ($middlewareCallbacks as $middlewareCallback) {
                     $route->_middlewaresToAttach[] = $middlewareCallback;
