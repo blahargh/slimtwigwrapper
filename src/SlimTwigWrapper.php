@@ -416,7 +416,7 @@ class SlimTwigWrapper
             }
         }
         // Store this route so it can be referenced later.
-        $this->routes[$path] = $route;
+        $this->routes[implode(',', $methods) . '--' . $path] = $route;
         // Store this route so subsequent calls to addRouteMiddleware know to attach it to this route.
         $this->lastDefinedRoute = $route;
 
