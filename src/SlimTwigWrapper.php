@@ -407,6 +407,10 @@ class SlimTwigWrapper
         // Check for any group middlewares and store them to this route.
         // They will be attached prior to running \Slim\App::run(), so their
         // order of execution is similar to how Slim does it.
+        // Group middleware of an ancestor path will need to be loaded
+        // first (which is reverse of just adding them as they are declared),
+        // but those within the same path will be loaded similar to Slim.
+        $this->groupMiddlewares = array_reverse($this->groupMiddlewares);
         $route->_middlewaresToAttach = array();
         foreach ($this->groupMiddlewares as $path => $middlewareCallbacks) {
             if (substr($path, 0, strlen($path)) === $path) {
