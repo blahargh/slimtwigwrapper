@@ -15,6 +15,7 @@ class SlimTwigWrapper
     private $subrootBase = null;         // Store the subroot base, if specified in the constructor.
     private $noMoreRenders = false;      // Flag to disable rendering more templates. This is mainly set after calling redirectTo().
     private $attributes = array();       // Safe storage for variables that will need to be passed around between different callbacks; for example, middleware to route.
+    private $routingLog = array();       // Log of what files were loaded for the current route. Mainly for debugging.
     public $twig;
     public $request;       // Changes per route/middleware.
     public $response;      // Changes per route/middleware.
@@ -200,6 +201,7 @@ class SlimTwigWrapper
     {
         if (!isset($this->groupMiddlewares[$path])) { $this->groupMiddlewares[$path] = array(); }
         $this->groupMiddlewares[$path][] = $this->makeMiddlewareCallback($callback);
+        $this->routingLog[] = "ADD GROUP MIDDLEWARE: $path";
         return $this;
     }
 
@@ -209,6 +211,7 @@ class SlimTwigWrapper
     public function addMiddleware($callback)
     {
         $this->slim->add($this->makeMiddlewareCallback($callback));
+        $this->routingLog[] = "ADD MIDDLEWARE";
         return $this;
     }
 
@@ -219,6 +222,7 @@ class SlimTwigWrapper
     {
         if (!$this->lastDefinedRoute) { return this; }
         $this->lastDefinedRoute->add($this->makeMiddlewareCallback($callback));
+        $this->routingLog[] = "ADD ROUTE MIDDLEWARE";
         return $this;
     }
 
@@ -294,6 +298,14 @@ class SlimTwigWrapper
             /** return $toRender; **/
             throw new \Exception('Use a view file template (.html) for rendering HTML.');
         }
+    }
+
+    /**
+     * Get the routing log.
+     */
+    public function getRoutingLog()
+    {
+        return $this->routingLog;
     }
 
     /**
@@ -403,6 +415,8 @@ class SlimTwigWrapper
             return $wrapper->response;
         };
 
+        $pathID = implode(',', $methods) . '--' . $path;
+        $this->routingLog[] = "ADD ROUTE: $pathID -- $path";
         $route = $this->slim->map($methods, $path, $responseCall);
         // Check for any group middlewares and store them to this route.
         // They will be attached prior to running \Slim\App::run(), so their
@@ -412,15 +426,16 @@ class SlimTwigWrapper
         // but those within the same path will be loaded similar to Slim.
         $groupMiddlewares = array_reverse($this->groupMiddlewares);
         $route->_middlewaresToAttach = array();
-        foreach ($groupMiddlewares as $path => $middlewareCallbacks) {
-            if (substr($path, 0, strlen($path)) === $path) {
-                foreach ($middlewareCallbacks as $middlewareCallback) {
-                    $route->_middlewaresToAttach[] = $middlewareCallback;
+        foreach ($groupMiddlewares as $gPath => $middlewareCallbacks) {
+            if (substr($path, 0, strlen($gPath)) === $gPath) {
+                $this->routingLog[] = "GROUP MIDDLEWARE TO ATTACH TO \"$pathID\": $gPath";
+                foreach ($middlewareCallbacks as $i => $middlewareCallback) {
+                    $route->_middlewaresToAttach["$gPath-$i"] = $middlewareCallback;
                 }
             }
         }
         // Store this route so it can be referenced later.
-        $this->routes[implode(',', $methods) . '--' . $path] = $route;
+        $this->routes[$pathID] = $route;
         // Store this route so subsequent calls to addRouteMiddleware know to attach it to this route.
         $this->lastDefinedRoute = $route;
 
@@ -441,6 +456,7 @@ class SlimTwigWrapper
             $dir = "{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}";
             foreach ($parts as $part) {
                 if (file_exists("$dir/$part/$routesFile")) {
+                    $this->routingLog[] = "ROUTES FILE LOADED: $dir/$part/$routesFile";
                     include "$dir/$part/$routesFile";
                 }
                 $dir .= "/$part";
@@ -453,14 +469,16 @@ class SlimTwigWrapper
         // Add routes if defined in a "routes.php" file in the base directory.
         if (!$this->noMoreRoutes && file_exists("{$this->server['DOCUMENT_ROOT']}/routes.php")) {
             $app = $this;
+            $this->routingLog[] = "ROOT ROUTE LOADED: {$this->server['DOCUMENT_ROOT']}/routes.php";
             include "{$this->server['DOCUMENT_ROOT']}/routes.php";
         }
 
         // Attach group middlewares to the proper routes at this point.
-        foreach ($this->routes as $route) {
+        foreach ($this->routes as $rPath => $route) {
             if (!isset($route->_middlewaresToAttach)) { continue; }
-            foreach ($route->_middlewaresToAttach as $middlewareCallback) {
+            foreach ($route->_middlewaresToAttach as $mPath => $middlewareCallback) {
                 $route->add($middlewareCallback);
+                $this->routingLog[] = "GROUP MIDDLEWARE ATTACHED TO \"$rPath\": $mPath";
             }
         }
         // Run Slim.
