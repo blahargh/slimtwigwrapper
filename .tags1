@@ -1,0 +1,125 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+SlimTwigWrapper	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^class SlimTwigWrapper$/;"	class	line:8
+app	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $app;$/;"	variable	line:10
+noMoreRoutes	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $noMoreRoutes = false;       \/\/ Flag to determine if subsequent routes should even be loaded.$/;"	variable	line:11
+noMoreRoutes	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $noMoreRoutes = false;       \/\/ Flag to determine if subsequent routes should even be loaded.$/;"	variable	line:11
+groupMiddlewares	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $groupMiddlewares = array(); \/\/ Storage for defined group middlewares.$/;"	variable	line:12
+groupMiddlewares	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $groupMiddlewares = array(); \/\/ Storage for defined group middlewares.$/;"	variable	line:12
+routes	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $routes = array();           \/\/ Store the routes so they can be manipulated prior to calling \\Slim\\App::run().$/;"	variable	line:13
+routes	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $routes = array();           \/\/ Store the routes so they can be manipulated prior to calling \\Slim\\App::run().$/;"	variable	line:13
+lastDefinedRoute	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $lastDefinedRoute = null;    \/\/ Store the last defined route, so subsequent calls to addRouteMiddleware know to which route to attach the middleware.$/;"	variable	line:14
+lastDefinedRoute	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $lastDefinedRoute = null;    \/\/ Store the last defined route, so subsequent calls to addRouteMiddleware know to which route to attach the middleware.$/;"	variable	line:14
+subrootBase	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $subrootBase = null;         \/\/ Store the subroot base, if specified in the constructor.$/;"	variable	line:15
+subrootBase	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $subrootBase = null;         \/\/ Store the subroot base, if specified in the constructor.$/;"	variable	line:15
+noMoreRenders	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $noMoreRenders = false;      \/\/ Flag to disable rendering more templates. This is mainly set after calling redirectTo().$/;"	variable	line:16
+noMoreRenders	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $noMoreRenders = false;      \/\/ Flag to disable rendering more templates. This is mainly set after calling redirectTo().$/;"	variable	line:16
+attributes	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $attributes = array();       \/\/ Safe storage for variables that will need to be passed around between different callbacks; for example, middleware to route.$/;"	variable	line:17
+attributes	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $attributes = array();       \/\/ Safe storage for variables that will need to be passed around between different callbacks; for example, middleware to route.$/;"	variable	line:17
+routingLog	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $routingLog = array();       \/\/ Log of what files were loaded for the current route. Mainly for debugging.$/;"	variable	line:18
+routingLog	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private $routingLog = array();       \/\/ Log of what files were loaded for the current route. Mainly for debugging.$/;"	variable	line:18
+twig	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public $twig;$/;"	variable	line:19
+request	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public $request;       \/\/ Changes per route\/middleware.$/;"	variable	line:20
+response	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public $response;      \/\/ Changes per route\/middleware.$/;"	variable	line:21
+basePath	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public $basePath;      \/\/ Changes per route.$/;"	variable	line:22
+next	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public $next;          \/\/ Changes per middleware.$/;"	variable	line:23
+wasNextCalled	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public $wasNextCalled; \/\/ Changes per middleware.$/;"	variable	line:24
+server	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public $server;$/;"	variable	line:26
+realURIDirectory	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public $realURIDirectory;$/;"	variable	line:27
+options	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^     * $options = [$/;"	variable	line:31
+__construct	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function __construct($options)$/;"	function	line:37
+server	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $this->server = $this->encode($_SERVER);$/;"	variable	line:39
+documentRoot	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            \/\/   $documentRoot = 'mysite'$/;"	variable	line:46
+documentRootAppend	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $documentRootAppend = str_replace('\\\\', '\/', trim($options['documentRootAppend']));$/;"	variable	line:49
+documentRootAppend	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            if (substr($documentRootAppend, 0, 1) !== '\/') { $documentRootAppend = '\/' . $documentRootAppend; }$/;"	variable	line:50
+length	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $length = strlen($documentRootAppend);$/;"	variable	line:53
+subrootBase	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $this->subrootBase = $options['subrootBase'];$/;"	variable	line:58
+subrootBase	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $this->subrootBase = str_replace('\\\\', '\/', trim($this->subrootBase));$/;"	variable	line:59
+subrootBase	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            if (substr($this->subrootBase, 0, 1) !== '\/') { $this->subrootBase = '\/' . $this->subrootBase; }$/;"	variable	line:60
+parts	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $parts = explode('?', $this->server['REQUEST_URI']);$/;"	variable	line:66
+realURIDirectory	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $this->realURIDirectory = $this->getRealDirectory(); \/\/<-- "\/" or "\/some\/path"$/;"	variable	line:70
+slim	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $this->slim = $options['slimObject'];$/;"	variable	line:73
+container	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $this->container = $this->slim->getContainer();$/;"	variable	line:74
+container	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $this->container = new \\Slim\\Container();$/;"	variable	line:76
+slim	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $this->slim = new \\Slim\\App($this->container);$/;"	variable	line:77
+templatePaths	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $templatePaths = array('');$/;"	variable	line:87
+path	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $path = ltrim($this->realURIDirectory, '\/');$/;"	variable	line:94
+path	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^                $path = ltrim($this->subrootBase, '\/') . '\/' . $path;$/;"	variable	line:96
+loader	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $loader = new \\Twig_Loader_Filesystem($templatePaths);$/;"	variable	line:107
+twig	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $twig = new \\Twig_Environment($loader, array($/;"	variable	line:108
+twig	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $this->twig = $this->slim->getContainer()->get('twig');$/;"	variable	line:115
+getRealDirectory	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private function getRealDirectory($string = null)$/;"	function	line:122
+string	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        if ($string === null) { $string = $this->server['REQUEST_URI']; }$/;"	variable	line:124
+string	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $string = str_replace('\\\\', '\/', trim($string));$/;"	variable	line:126
+tokens	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $tokens = explode('\/', trim($string, '\/'));$/;"	variable	line:127
+dir	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $dir = null;$/;"	variable	line:128
+check	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $check = "$dir\/$part";$/;"	variable	line:131
+dir	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^                $dir = $check;$/;"	variable	line:133
+makeMiddlewareCallback	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    private function makeMiddlewareCallback($callback)$/;"	function	line:144
+wrapper	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $wrapper = $this;$/;"	variable	line:146
+middlewareCallback	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $middlewareCallback = $callback->bindTo($wrapper);$/;"	variable	line:147
+middlewareCall	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $middlewareCall = function ($request, $response, $next) use ($wrapper, $middlewareCallback) {$/;"	variable	line:148
+callNext	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $callNext = function () use ($wrapper) {$/;"	variable	line:153
+addAttribute	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function addAttribute($name, $value)$/;"	function	line:171
+addDependency	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function addDependency($name, $callback)$/;"	function	line:179
+c	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $c = $this->slim->getContainer();$/;"	variable	line:181
+addGlobal	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function addGlobal($name, $value)$/;"	function	line:190
+addGroupMiddleware	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function addGroupMiddleware($path, $callback)$/;"	function	line:200
+addMiddleware	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function addMiddleware($callback)$/;"	function	line:211
+addRouteMiddleware	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function addRouteMiddleware($callback)$/;"	function	line:221
+encode	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function encode($strOrArray)$/;"	function	line:233
+output	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $output = array();$/;"	variable	line:236
+name	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            foreach ($strOrArray as $name => $value) {$/;"	variable	line:237
+getAttribute	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function getAttribute($name)$/;"	function	line:250
+getParam	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function getParam($name)$/;"	function	line:258
+getParams	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function getParams()$/;"	function	line:267
+getRender	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function getRender($toRender, $params = array())$/;"	function	line:279
+params	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function getRender($toRender, $params = array())$/;"	variable	line:279
+_toRender	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $_toRender = rtrim(dirname($toRender), '\/') . '\/_' . basename($toRender);$/;"	variable	line:289
+getRoutingLog	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function getRoutingLog()$/;"	function	line:306
+getUploadedFiles	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function getUploadedFiles()$/;"	function	line:331
+getVars	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function getVars()$/;"	function	line:340
+redirectTo	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function redirectTo($uri)$/;"	function	line:350
+response	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $this->response = $this->response->withRedirect($uri);$/;"	variable	line:354
+uri	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^                $uri = $this->realURIDirectory . '\/' . $uri;$/;"	variable	line:359
+uri	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            if (substr($uri, 0, 1) !== '\/') { $uri = '\/' . $uri; }$/;"	variable	line:363
+response	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $this->response = $this->response->withRedirect($this->server['BASE_PATH'] . $uri);$/;"	variable	line:364
+noMoreRenders	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $this->noMoreRenders = true;$/;"	variable	line:366
+render	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function render($toRender, $params = array())$/;"	function	line:372
+params	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function render($toRender, $params = array())$/;"	variable	line:372
+route	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function route($methods, $path, $callback)$/;"	function	line:383
+path	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $path = $this->realURIDirectory . '\/' . $path;$/;"	variable	line:391
+path	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        if (substr($path, 0, 1) !== '\/') { $path = '\/' . $path; }$/;"	variable	line:396
+path	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        if ($path !== '\/') { $path = rtrim($path, '\/'); }$/;"	variable	line:401
+methods	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $methods = explode(',', $methods);$/;"	variable	line:403
+i	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        foreach ($methods as $i => $m) {$/;"	variable	line:404
+m	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $m = trim($m);$/;"	variable	line:405
+wrapper	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $wrapper = $this;$/;"	variable	line:409
+routeCallback	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $routeCallback = $callback->bindTo($wrapper);$/;"	variable	line:410
+responseCall	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $responseCall = function ($request, $response, $args) use ($wrapper, $routeCallback) {$/;"	variable	line:411
+pathID	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $pathID = implode(',', $methods) . '--' . $path;$/;"	variable	line:418
+route	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $route = $this->slim->map($methods, $path, $responseCall);$/;"	variable	line:420
+groupMiddlewares	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $groupMiddlewares = array_reverse($this->groupMiddlewares);$/;"	variable	line:427
+gPath	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        foreach ($groupMiddlewares as $gPath => $middlewareCallbacks) {$/;"	variable	line:429
+i	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^                foreach ($middlewareCallbacks as $i => $middlewareCallback) {$/;"	variable	line:432
+lastDefinedRoute	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $this->lastDefinedRoute = $route;$/;"	variable	line:440
+run	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function run()$/;"	function	line:448
+routesFile	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $routesFile = 'routes.php';$/;"	variable	line:451
+app	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $app = $this;$/;"	variable	line:453
+parts	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $parts = explode('\/', trim($this->realURIDirectory, '\/'));$/;"	variable	line:455
+dir	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $dir = "{$this->server['DOCUMENT_ROOT']}{$this->subrootBase}";$/;"	variable	line:456
+noMoreRoutes	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $this->noMoreRoutes = true;$/;"	variable	line:466
+app	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            $app = $this;$/;"	variable	line:471
+rPath	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        foreach ($this->routes as $rPath => $route) {$/;"	variable	line:477
+mPath	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^            foreach ($route->_middlewaresToAttach as $mPath => $middlewareCallback) {$/;"	variable	line:479
+settings	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function settings($name, $value = null)$/;"	function	line:491
+value	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function settings($name, $value = null)$/;"	variable	line:491
+settings	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $settings = $this->container->get('settings');$/;"	variable	line:493
+withJson	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function withJson($data, $status = 200, $encodingOptions = 0)$/;"	function	line:505
+status	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function withJson($data, $status = 200, $encodingOptions = 0)$/;"	variable	line:505
+response	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^        $this->response = $this->response->withJson($data, $status, $encodingOptions);$/;"	variable	line:507
+write	C:\Users\santos.134\_Workspace\LocalServer\devenv\apps\slimtwigwrapper\src\SlimTwigWrapper.php	/^    public function write($str)$/;"	function	line:513

@@ -143,24 +143,28 @@ class SlimTwigWrapper
     */
     private function makeMiddlewareCallback($callback)
     {
-        $wrapper = $this;
-        $middlewareCallback = $callback->bindTo($wrapper);
-        $middlewareCall = function ($request, $response, $next) use ($wrapper, $middlewareCallback) {
-            $wrapper->request = $request;
-            $wrapper->response = $response;
-            $wrapper->next = $next;
-            $wrapper->wasNextCalled = false;
-            $callNext = function () use ($wrapper) {
-                $wrapper->response = call_user_func($wrapper->next, $wrapper->request, $wrapper->response);
-                $wrapper->wasNextCalled = true;
+        if ($callback instanceof \Closure) {
+            $wrapper = $this;
+            $middlewareCallback = $callback->bindTo($wrapper);
+            $middlewareCall = function ($request, $response, $next) use ($wrapper, $middlewareCallback) {
+                $wrapper->request = $request;
+                $wrapper->response = $response;
+                $wrapper->next = $next;
+                $wrapper->wasNextCalled = false;
+                $callNext = function () use ($wrapper) {
+                    $wrapper->response = call_user_func($wrapper->next, $wrapper->request, $wrapper->response);
+                    $wrapper->wasNextCalled = true;
+                };
+                $middlewareCallback($callNext);
+                if (!$wrapper->wasNextCalled) {
+                    $callNext();
+                }
+                return $wrapper->response;
             };
-            $middlewareCallback($callNext);
-            if (!$wrapper->wasNextCalled) {
-                $callNext();
-            }
-            return $wrapper->response;
-        };
-        return $middlewareCall;
+            return $middlewareCall;
+        } else {
+            return $callback;
+        }
     }
 
 
